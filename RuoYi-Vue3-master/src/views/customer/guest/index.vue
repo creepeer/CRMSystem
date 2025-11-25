@@ -1,584 +1,1550 @@
 <template>
-   <div class="app-container">
-      <el-form :model="queryParams" ref="queryRef" v-show="showSearch" :inline="true" label-width="68px">
-         <el-form-item label="角色名称" prop="roleName">
-            <el-input
-               v-model="queryParams.roleName"
-               placeholder="请输入角色名称"
-               clearable
-               style="width: 240px"
-               @keyup.enter="handleQuery"
-            />
-         </el-form-item>
-         <el-form-item label="权限字符" prop="roleKey">
-            <el-input
-               v-model="queryParams.roleKey"
-               placeholder="请输入权限字符"
-               clearable
-               style="width: 240px"
-               @keyup.enter="handleQuery"
-            />
-         </el-form-item>
-         <el-form-item label="状态" prop="status">
-            <el-select
-               v-model="queryParams.status"
-               placeholder="角色状态"
-               clearable
-               style="width: 240px"
+  <div class="customer-container">
+    <!-- 顶部导航栏 -->
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <div class="logo">
+          <i class="fas fa-chart-network"></i>
+          <h1>先锋互联</h1>
+        </div>
+      </div>
+      <div class="navbar-menu">
+        <a href="#" class="navbar-item">
+          <i class="fas fa-home"></i>
+          <span>主页</span>
+        </a>
+        <a href="#" class="navbar-item">
+          <i class="fas fa-sitemap"></i>
+          <span>公司架构</span>
+        </a>
+        <a href="#" class="navbar-item active">
+          <i class="fas fa-users"></i>
+          <span>客户</span>
+        </a>
+      </div>
+      <div class="navbar-user">
+        <div class="user-info">
+          <div class="user-avatar">
+            <i class="fas fa-user-circle"></i>
+          </div>
+          <span class="user-name">管理员</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <main class="main-content">
+      <!-- 页面标题和操作栏 -->
+      <div class="page-header">
+        <div class="header-content">
+          <h2 class="page-title">客户管理</h2>
+          <p class="page-subtitle">管理所有客户信息</p>
+        </div>
+        <div class="actions">
+          <button class="btn btn-primary" @click="showAddCustomer = true">
+            <i class="fas fa-plus"></i>
+            新增
+          </button>
+          <button class="btn btn-outline" @click="showExcelImport = true">
+            <i class="fas fa-file-excel"></i>
+            Excel导入
+          </button>
+        </div>
+      </div>
+
+      <!-- 查询条件 -->
+      <div class="query-card">
+        <div class="query-row">
+          <div class="query-group">
+            <label class="query-label">客户姓名</label>
+            <input 
+              type="text" 
+              v-model="queryParams.name"
+              placeholder="请输入客户姓名"
+              class="query-input"
             >
-               <el-option
-                  v-for="dict in sys_normal_disable"
-                  :key="dict.value"
-                  :label="dict.label"
-                  :value="dict.value"
-               />
-            </el-select>
-         </el-form-item>
-         <el-form-item label="创建时间" style="width: 308px">
-            <el-date-picker
-               v-model="dateRange"
-               value-format="YYYY-MM-DD"
-               type="daterange"
-               range-separator="-"
-               start-placeholder="开始日期"
-               end-placeholder="结束日期"
-            ></el-date-picker>
-         </el-form-item>
-         <el-form-item>
-            <el-button type="primary" icon="Search" @click="handleQuery">搜索</el-button>
-            <el-button icon="Refresh" @click="resetQuery">重置</el-button>
-         </el-form-item>
-      </el-form>
-      <el-row :gutter="10" class="mb8">
-         <el-col :span="1.5">
-            <el-button
-               type="primary"
-               plain
-               icon="Plus"
-               @click="handleAdd"
-               v-hasPermi="['system:role:add']"
-            >新增</el-button>
-         </el-col>
-         <el-col :span="1.5">
-            <el-button
-               type="success"
-               plain
-               icon="Edit"
-               :disabled="single"
-               @click="handleUpdate"
-               v-hasPermi="['system:role:edit']"
-            >修改</el-button>
-         </el-col>
-         <el-col :span="1.5">
-            <el-button
-               type="danger"
-               plain
-               icon="Delete"
-               :disabled="multiple"
-               @click="handleDelete"
-               v-hasPermi="['system:role:remove']"
-            >删除</el-button>
-         </el-col>
-         <el-col :span="1.5">
-            <el-button
-               type="warning"
-               plain
-               icon="Download"
-               @click="handleExport"
-               v-hasPermi="['system:role:export']"
-            >导出</el-button>
-         </el-col>
-         <right-toolbar v-model:showSearch="showSearch" @queryTable="getList"></right-toolbar>
-      </el-row>
+          </div>
+          <div class="query-group">
+            <label class="query-label">联系方式</label>
+            <input 
+              type="text" 
+              v-model="queryParams.contact"
+              placeholder="请输入联系方式"
+              class="query-input"
+            >
+          </div>
+          <div class="query-group">
+            <label class="query-label">状态</label>
+            <select v-model="queryParams.status" class="query-select">
+              <option value="">全部</option>
+              <option value="active">活跃</option>
+              <option value="inactive">非活跃</option>
+              <option value="vip">VIP</option>
+            </select>
+          </div>
+          <div class="query-actions">
+            <button class="btn btn-primary" @click="handleQuery">
+              <i class="fas fa-search"></i>
+              搜索
+            </button>
+            <button class="btn btn-outline" @click="handleReset">
+              <i class="fas fa-redo"></i>
+              重置
+            </button>
+          </div>
+        </div>
+      </div>
 
-      <!-- 表格数据 -->
-      <el-table v-loading="loading" :data="roleList" @selection-change="handleSelectionChange">
-         <el-table-column type="selection" width="55" align="center" />
-         <el-table-column label="角色编号" prop="roleId" width="120" />
-         <el-table-column label="角色名称" prop="roleName" :show-overflow-tooltip="true" width="150" />
-         <el-table-column label="权限字符" prop="roleKey" :show-overflow-tooltip="true" width="150" />
-         <el-table-column label="显示顺序" prop="roleSort" width="100" />
-         <el-table-column label="状态" align="center" width="100">
-            <template #default="scope">
-               <el-switch
-                  v-model="scope.row.status"
-                  active-value="0"
-                  inactive-value="1"
-                  @change="handleStatusChange(scope.row)"
-               ></el-switch>
-            </template>
-         </el-table-column>
-         <el-table-column label="创建时间" align="center" prop="createTime">
-            <template #default="scope">
-               <span>{{ parseTime(scope.row.createTime) }}</span>
-            </template>
-         </el-table-column>
-         <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
-            <template #default="scope">
-              <el-tooltip content="修改" placement="top" v-if="scope.row.roleId !== 1">
-                <el-button link type="primary" icon="Edit" @click="handleUpdate(scope.row)" v-hasPermi="['system:role:edit']"></el-button>
-              </el-tooltip>
-              <el-tooltip content="删除" placement="top" v-if="scope.row.roleId !== 1">
-                <el-button link type="primary" icon="Delete" @click="handleDelete(scope.row)" v-hasPermi="['system:role:remove']"></el-button>
-              </el-tooltip>
-              <el-tooltip content="数据权限" placement="top" v-if="scope.row.roleId !== 1">
-                <el-button link type="primary" icon="CircleCheck" @click="handleDataScope(scope.row)" v-hasPermi="['system:role:edit']"></el-button>
-              </el-tooltip>
-              <el-tooltip content="分配用户" placement="top" v-if="scope.row.roleId !== 1">
-                <el-button link type="primary" icon="User" @click="handleAuthUser(scope.row)" v-hasPermi="['system:role:edit']"></el-button>
-              </el-tooltip>
-            </template>
-         </el-table-column>
-      </el-table>
-
-      <pagination
-         v-show="total > 0"
-         :total="total"
-         v-model:page="queryParams.pageNum"
-         v-model:limit="queryParams.pageSize"
-         @pagination="getList"
-      />
-
-      <!-- 添加或修改角色配置对话框 -->
-      <el-dialog :title="title" v-model="open" width="500px" append-to-body>
-         <el-form ref="roleRef" :model="form" :rules="rules" label-width="100px">
-            <el-form-item label="角色名称" prop="roleName">
-               <el-input v-model="form.roleName" placeholder="请输入角色名称" />
-            </el-form-item>
-            <el-form-item prop="roleKey">
-               <template #label>
-                  <span>
-                     <el-tooltip content="控制器中定义的权限字符，如：@PreAuthorize(`@ss.hasRole('admin')`)" placement="top">
-                        <el-icon><question-filled /></el-icon>
-                     </el-tooltip>
-                     权限字符
+      <!-- 客户列表 -->
+      <div class="content-card">
+        <div class="table-container">
+          <table class="customer-table">
+            <thead>
+              <tr>
+                <th>客户编号</th>
+                <th>客户姓名</th>
+                <th>联系方式</th>
+                <th>年龄</th>
+                <th>状态</th>
+                <th>创建时间</th>
+                <th class="actions-col">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(customer, index) in filteredCustomers" :key="index + customer.id">
+                <td class="customer-id">{{ customer.id }}</td>
+                <td>
+                  <div class="customer-name">
+                    <div class="avatar">
+                      {{ customer.name.charAt(0) || '?' }}
+                    </div>
+                    {{ customer.name }}
+                  </div>
+                </td>
+                <td>{{ customer.contact }}</td>
+                <td>{{ customer.age }}岁</td>
+                <td>
+                  <span class="status-badge" :class="customer.status">
+                    {{ getStatusText(customer.status) }}
                   </span>
-               </template>
-               <el-input v-model="form.roleKey" placeholder="请输入权限字符" />
-            </el-form-item>
-            <el-form-item label="角色顺序" prop="roleSort">
-               <el-input-number v-model="form.roleSort" controls-position="right" :min="0" />
-            </el-form-item>
-            <el-form-item label="状态">
-               <el-radio-group v-model="form.status">
-                  <el-radio
-                     v-for="dict in sys_normal_disable"
-                     :key="dict.value"
-                     :value="dict.value"
-                  >{{ dict.label }}</el-radio>
-               </el-radio-group>
-            </el-form-item>
-            <el-form-item label="菜单权限">
-               <el-checkbox v-model="menuExpand" @change="handleCheckedTreeExpand($event, 'menu')">展开/折叠</el-checkbox>
-               <el-checkbox v-model="menuNodeAll" @change="handleCheckedTreeNodeAll($event, 'menu')">全选/全不选</el-checkbox>
-               <el-checkbox v-model="form.menuCheckStrictly" @change="handleCheckedTreeConnect($event, 'menu')">父子联动</el-checkbox>
-               <el-tree
-                  class="tree-border"
-                  :data="menuOptions"
-                  show-checkbox
-                  ref="menuRef"
-                  node-key="id"
-                  :check-strictly="!form.menuCheckStrictly"
-                  empty-text="加载中，请稍候"
-                  :props="{ label: 'label', children: 'children' }"
-               ></el-tree>
-            </el-form-item>
-            <el-form-item label="备注">
-               <el-input v-model="form.remark" type="textarea" placeholder="请输入内容"></el-input>
-            </el-form-item>
-         </el-form>
-         <template #footer>
-            <div class="dialog-footer">
-               <el-button type="primary" @click="submitForm">确 定</el-button>
-               <el-button @click="cancel">取 消</el-button>
-            </div>
-         </template>
-      </el-dialog>
+                </td>
+                <td>{{ customer.createTime }}</td>
+                <td class="actions-col">
+                  <div class="actions-cell">
+                    <button class="btn-action edit" @click="editCustomer(customer)" title="修改">
+                      <i class="fas fa-edit"></i>
+                      修改
+                    </button>
+                    <button class="btn-action delete" @click="deleteCustomer(customer.id)" title="删除">
+                      <i class="fas fa-trash"></i>
+                      删除
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
 
-      <!-- 分配角色数据权限对话框 -->
-      <el-dialog :title="title" v-model="openDataScope" width="500px" append-to-body>
-         <el-form :model="form" label-width="80px">
-            <el-form-item label="角色名称">
-               <el-input v-model="form.roleName" :disabled="true" />
-            </el-form-item>
-            <el-form-item label="权限字符">
-               <el-input v-model="form.roleKey" :disabled="true" />
-            </el-form-item>
-            <el-form-item label="权限范围">
-               <el-select v-model="form.dataScope" @change="dataScopeSelectChange">
-                  <el-option
-                     v-for="item in dataScopeOptions"
-                     :key="item.value"
-                     :label="item.label"
-                     :value="item.value"
-                  ></el-option>
-               </el-select>
-            </el-form-item>
-            <el-form-item label="数据权限" v-show="form.dataScope == 2">
-               <el-checkbox v-model="deptExpand" @change="handleCheckedTreeExpand($event, 'dept')">展开/折叠</el-checkbox>
-               <el-checkbox v-model="deptNodeAll" @change="handleCheckedTreeNodeAll($event, 'dept')">全选/全不选</el-checkbox>
-               <el-checkbox v-model="form.deptCheckStrictly" @change="handleCheckedTreeConnect($event, 'dept')">父子联动</el-checkbox>
-               <el-tree
-                  class="tree-border"
-                  :data="deptOptions"
-                  show-checkbox
-                  default-expand-all
-                  ref="deptRef"
-                  node-key="id"
-                  :check-strictly="!form.deptCheckStrictly"
-                  empty-text="加载中，请稍候"
-                  :props="{ label: 'label', children: 'children' }"
-               ></el-tree>
-            </el-form-item>
-         </el-form>
-         <template #footer>
-            <div class="dialog-footer">
-               <el-button type="primary" @click="submitDataScope">确 定</el-button>
-               <el-button @click="cancelDataScope">取 消</el-button>
+        <!-- 空状态 -->
+        <div v-if="filteredCustomers.length === 0" class="empty-state">
+          <i class="fas fa-users empty-icon"></i>
+          <p>暂无客户数据</p>
+          <button class="btn btn-outline mt-3" @click="showAddCustomer = true">
+            <i class="fas fa-plus"></i>
+            立即新增客户
+          </button>
+        </div>
+
+        <!-- 分页 -->
+        <div class="pagination" v-if="filteredCustomers.length > 0">
+          <div class="pagination-info">
+            共 {{ filteredCustomers.length }} 条记录
+          </div>
+          <div class="pagination-controls">
+            <button class="pagination-btn" :disabled="currentPage === 1" @click="prevPage">
+              <i class="fas fa-chevron-left"></i>
+            </button>
+            <span class="pagination-text">第 {{ currentPage }} / {{ totalPages }} 页</span>
+            <button class="pagination-btn" :disabled="currentPage === totalPages" @click="nextPage">
+              <i class="fas fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 新增客户弹窗 -->
+    <div v-if="showAddCustomer" class="modal-overlay" @click="closeAddModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>新增客户</h3>
+          <button class="close-btn" @click="closeAddModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <form @submit.prevent="addCustomer" class="customer-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="customerName" class="form-label required">客户姓名</label>
+                <input 
+                  type="text" 
+                  id="customerName"
+                  v-model="newCustomer.name"
+                  placeholder="请输入客户姓名"
+                  class="form-input"
+                  required
+                >
+              </div>
+              <div class="form-group">
+                <label for="customerAge" class="form-label required">年龄</label>
+                <input 
+                  type="number" 
+                  id="customerAge"
+                  v-model="newCustomer.age"
+                  placeholder="请输入年龄"
+                  min="1"
+                  max="120"
+                  class="form-input"
+                  required
+                >
+              </div>
             </div>
-         </template>
-      </el-dialog>
-   </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="customerContact" class="form-label required">联系方式</label>
+                <input 
+                  type="text" 
+                  id="customerContact"
+                  v-model="newCustomer.contact"
+                  placeholder="请输入联系方式"
+                  class="form-input"
+                  required
+                  pattern="\d{7,11}"
+                  title="联系方式需为7-11位数字"
+                >
+              </div>
+              <div class="form-group">
+                <label for="customerStatus" class="form-label required">状态</label>
+                <select id="customerStatus" v-model="newCustomer.status" class="form-select" required>
+                  <option value="active">活跃</option>
+                  <option value="inactive">非活跃</option>
+                  <option value="vip">VIP</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" @click="closeAddModal">
+                取消
+              </button>
+              <button type="submit" class="btn btn-primary">
+                确认添加
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- 编辑客户弹窗 -->
+    <div v-if="showEditCustomer" class="modal-overlay" @click="closeEditModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>修改客户</h3>
+          <button class="close-btn" @click="closeEditModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <form @submit.prevent="updateCustomer" class="customer-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editCustomerName" class="form-label required">客户姓名</label>
+                <input 
+                  type="text" 
+                  id="editCustomerName"
+                  v-model="editCustomerData.name"
+                  placeholder="请输入客户姓名"
+                  class="form-input"
+                  required
+                >
+              </div>
+              <div class="form-group">
+                <label for="editCustomerAge" class="form-label required">年龄</label>
+                <input 
+                  type="number" 
+                  id="editCustomerAge"
+                  v-model="editCustomerData.age"
+                  placeholder="请输入年龄"
+                  min="1"
+                  max="120"
+                  class="form-input"
+                  required
+                >
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <div class="form-group">
+                <label for="editCustomerContact" class="form-label required">联系方式</label>
+                <input 
+                  type="text" 
+                  id="editCustomerContact"
+                  v-model="editCustomerData.contact"
+                  placeholder="请输入联系方式"
+                  class="form-input"
+                  required
+                  pattern="\d{7,11}"
+                  title="联系方式需为7-11位数字"
+                >
+              </div>
+              <div class="form-group">
+                <label for="editCustomerStatus" class="form-label required">状态</label>
+                <select id="editCustomerStatus" v-model="editCustomerData.status" class="form-select" required>
+                  <option value="active">活跃</option>
+                  <option value="inactive">非活跃</option>
+                  <option value="vip">VIP</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-actions">
+              <button type="button" class="btn btn-outline" @click="closeEditModal">
+                取消
+              </button>
+              <button type="submit" class="btn btn-primary">
+                确认修改
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Excel导入弹窗 -->
+    <div v-if="showExcelImport" class="modal-overlay" @click="closeExcelModal">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h3>Excel导入客户</h3>
+          <button class="close-btn" @click="closeExcelModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="modal-body">
+          <!-- 导入说明 -->
+          <div class="import-tips">
+            <p class="tips-title"><i class="fas fa-info-circle text-primary"></i> 导入说明</p>
+            <ul class="tips-list">
+              <li>支持.xlsx/.xls格式，单个文件最大5MB</li>
+              <li>必填字段：客户姓名、年龄（1-120）、联系方式（7-11位数字）</li>
+              <li>状态仅支持：活跃/非活跃/VIP，不填默认「活跃」</li>
+              <li>重复联系方式会自动跳过</li>
+            </ul>
+          </div>
+
+          <!-- 模板下载 -->
+          <div class="template-download">
+            <button class="btn btn-outline" @click="downloadTemplate">
+              <i class="fas fa-download"></i>
+              下载导入模板
+            </button>
+            <p class="template-desc">按模板格式填写，避免导入失败</p>
+          </div>
+
+          <!-- 文件上传 -->
+          <div class="file-upload-section">
+            <label class="form-label required">选择Excel文件</label>
+            <div class="file-upload-area">
+              <label for="excelFile" class="upload-label">
+                <i class="fas fa-cloud-upload-alt text-primary"></i>
+                <p class="upload-text">点击或拖拽文件至此处</p>
+                <p class="upload-hint">支持.xlsx/.xls，最大5MB</p>
+                <input 
+                  type="file" 
+                  id="excelFile" 
+                  accept=".xlsx,.xls" 
+                  class="file-input"
+                  @change="handleFileSelect"
+                >
+              </label>
+            </div>
+
+            <!-- 已选文件 -->
+            <div v-if="selectedFileName" class="selected-file">
+              <i class="fas fa-file-excel text-success"></i>
+              <span class="file-name">{{ selectedFileName }}</span>
+              <button type="button" class="remove-file-btn" @click="clearSelectedFile">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- 导入按钮 -->
+          <div class="form-actions import-actions">
+            <button type="button" class="btn btn-outline" @click="closeExcelModal">
+              取消
+            </button>
+            <button 
+              class="btn btn-primary"
+              @click="handleExcelImport"
+              :disabled="!selectedFile"
+            >
+              <i class="fas fa-upload"></i>
+              开始导入
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
-<script setup name="Role">
-import { addRole, changeRoleStatus, dataScope, delRole, getRole, listRole, updateRole, deptTreeSelect } from "@/api/system/role"
-import { roleMenuTreeselect, treeselect as menuTreeselect } from "@/api/system/menu"
+<script>
+// 修复：使用CDN引入xlsx（避免npm依赖问题）
+const XLSX = window.XLSX || {};
 
-const router = useRouter()
-const { proxy } = getCurrentInstance()
-const { sys_normal_disable } = proxy.useDict("sys_normal_disable")
-
-const roleList = ref([])
-const open = ref(false)
-const loading = ref(true)
-const showSearch = ref(true)
-const ids = ref([])
-const single = ref(true)
-const multiple = ref(true)
-const total = ref(0)
-const title = ref("")
-const dateRange = ref([])
-const menuOptions = ref([])
-const menuExpand = ref(false)
-const menuNodeAll = ref(false)
-const deptExpand = ref(true)
-const deptNodeAll = ref(false)
-const deptOptions = ref([])
-const openDataScope = ref(false)
-const menuRef = ref(null)
-const deptRef = ref(null)
-
-/** 数据范围选项*/
-const dataScopeOptions = ref([
-  { value: "1", label: "全部数据权限" },
-  { value: "2", label: "自定数据权限" },
-  { value: "3", label: "本部门数据权限" },
-  { value: "4", label: "本部门及以下数据权限" },
-  { value: "5", label: "仅本人数据权限" }
-])
-
-const data = reactive({
-  form: {},
-  queryParams: {
-    pageNum: 1,
-    pageSize: 10,
-    roleName: undefined,
-    roleKey: undefined,
-    status: undefined
+export default {
+  name: 'CustomerManagement',
+  data() {
+    return {
+      // 弹窗控制
+      showAddCustomer: false,
+      showEditCustomer: false,
+      showExcelImport: false,
+      // 分页与查询
+      currentPage: 1,
+      pageSize: 10,
+      queryParams: {
+        name: '',
+        contact: '',
+        status: ''
+      },
+      // 表单数据
+      newCustomer: {
+        name: '',
+        age: '',
+        contact: '',
+        status: 'active' // 默认活跃
+      },
+      editCustomerData: {
+        id: '',
+        name: '',
+        age: '',
+        contact: '',
+        status: 'active'
+      },
+      // 客户列表数据
+      customers: [
+        { id: 'CUST001', name: '张三', age: 30, contact: '2222222', status: 'active', createTime: '2024-10-22 09:30' },
+        { id: 'CUST002', name: '李四', age: 44, contact: '2222223', status: 'vip', createTime: '2024-10-23 14:15' },
+        { id: 'CUST003', name: '王五', age: 26, contact: '2222224', status: 'active', createTime: '2024-10-23 16:20' },
+        { id: 'CUST004', name: '赵六', age: 43, contact: '2222225', status: 'inactive', createTime: '2024-10-24 10:10' }
+      ],
+      // Excel导入相关
+      selectedFile: null,
+      selectedFileName: '',
+      validStatus: ['active', 'inactive', 'vip']
+    };
   },
-  rules: {
-    roleName: [{ required: true, message: "角色名称不能为空", trigger: "blur" }],
-    roleKey: [{ required: true, message: "权限字符不能为空", trigger: "blur" }],
-    roleSort: [{ required: true, message: "角色顺序不能为空", trigger: "blur" }]
+  computed: {
+    // 过滤客户列表
+    filteredCustomers() {
+      let result = [...this.customers];
+      // 姓名过滤
+      if (this.queryParams.name.trim()) {
+        const name = this.queryParams.name.trim().toLowerCase();
+        result = result.filter(cust => cust.name.toLowerCase().includes(name));
+      }
+      // 联系方式过滤
+      if (this.queryParams.contact.trim()) {
+        const contact = this.queryParams.contact.trim();
+        result = result.filter(cust => cust.contact.includes(contact));
+      }
+      // 状态过滤
+      if (this.queryParams.status) {
+        result = result.filter(cust => cust.status === this.queryParams.status);
+      }
+      // 分页处理
+      const start = (this.currentPage - 1) * this.pageSize;
+      return result.slice(start, start + this.pageSize);
+    },
+    // 总页数
+    totalPages() {
+      return Math.ceil(this.customers.length / this.pageSize);
+    }
   },
-})
+  methods: {
+    // ===================== 基础功能 =====================
+    // 关闭新增弹窗
+    closeAddModal() {
+      this.showAddCustomer = false;
+      this.resetNewCustomer();
+    },
+    // 关闭编辑弹窗
+    closeEditModal() {
+      this.showEditCustomer = false;
+    },
+    // 关闭Excel弹窗
+    closeExcelModal() {
+      this.showExcelImport = false;
+      this.clearSelectedFile();
+    },
+    // 重置新增表单
+    resetNewCustomer() {
+      this.newCustomer = {
+        name: '',
+        age: '',
+        contact: '',
+        status: 'active'
+      };
+    },
+    // 获取状态文本
+    getStatusText(status) {
+      const map = { active: '活跃', inactive: '非活跃', vip: 'VIP' };
+      return map[status] || '未知';
+    },
 
-const { queryParams, form, rules } = toRefs(data)
+    // ===================== 客户操作 =====================
+    // 新增客户
+    addCustomer() {
+      // 前端二次校验
+      if (!this.newCustomer.name.trim()) {
+        alert('客户姓名不能为空！');
+        return;
+      }
+      if (!this.newCustomer.age || this.newCustomer.age < 1 || this.newCustomer.age > 120) {
+        alert('年龄需为1-120的数字！');
+        return;
+      }
+      if (!/^\d{7,11}$/.test(this.newCustomer.contact.trim())) {
+        alert('联系方式需为7-11位数字！');
+        return;
+      }
+      // 检查联系方式重复
+      const isDuplicate = this.customers.some(cust => cust.contact === this.newCustomer.contact.trim());
+      if (isDuplicate) {
+        alert('该联系方式已存在！');
+        return;
+      }
 
-/** 查询角色列表 */
-function getList() {
-  loading.value = true
-  listRole(proxy.addDateRange(queryParams.value, dateRange.value)).then(response => {
-    roleList.value = response.rows
-    total.value = response.total
-    loading.value = false
-  })
-}
-
-/** 搜索按钮操作 */
-function handleQuery() {
-  queryParams.value.pageNum = 1
-  getList()
-}
-
-/** 重置按钮操作 */
-function resetQuery() {
-  dateRange.value = []
-  proxy.resetForm("queryRef")
-  handleQuery()
-}
-
-/** 删除按钮操作 */
-function handleDelete(row) {
-  const roleIds = row.roleId || ids.value
-  proxy.$modal.confirm('是否确认删除角色编号为"' + roleIds + '"的数据项?').then(function () {
-    return delRole(roleIds)
-  }).then(() => {
-    getList()
-    proxy.$modal.msgSuccess("删除成功")
-  }).catch(() => {})
-}
-
-/** 导出按钮操作 */
-function handleExport() {
-  proxy.download("system/role/export", {
-    ...queryParams.value,
-  }, `role_${new Date().getTime()}.xlsx`)
-}
-
-/** 多选框选中数据 */
-function handleSelectionChange(selection) {
-  ids.value = selection.map(item => item.roleId)
-  single.value = selection.length != 1
-  multiple.value = !selection.length
-}
-
-/** 角色状态修改 */
-function handleStatusChange(row) {
-  let text = row.status === "0" ? "启用" : "停用"
-  proxy.$modal.confirm('确认要"' + text + '""' + row.roleName + '"角色吗?').then(function () {
-    return changeRoleStatus(row.roleId, row.status)
-  }).then(() => {
-    proxy.$modal.msgSuccess(text + "成功")
-  }).catch(function () {
-    row.status = row.status === "0" ? "1" : "0"
-  })
-}
-
-/** 更多操作 */
-function handleCommand(command, row) {
-  switch (command) {
-    case "handleDataScope":
-      handleDataScope(row)
-      break
-    case "handleAuthUser":
-      handleAuthUser(row)
-      break
-    default:
-      break
-  }
-}
-
-/** 分配用户 */
-function handleAuthUser(row) {
-  router.push("/system/role-auth/user/" + row.roleId)
-}
-
-/** 查询菜单树结构 */
-function getMenuTreeselect() {
-  menuTreeselect().then(response => {
-    menuOptions.value = response.data
-  })
-}
-
-/** 所有部门节点数据 */
-function getDeptAllCheckedKeys() {
-  // 目前被选中的部门节点
-  let checkedKeys = deptRef.value.getCheckedKeys()
-  // 半选中的部门节点
-  let halfCheckedKeys = deptRef.value.getHalfCheckedKeys()
-  checkedKeys.unshift.apply(checkedKeys, halfCheckedKeys)
-  return checkedKeys
-}
-
-/** 重置新增的表单以及其他数据  */
-function reset() {
-  if (menuRef.value != undefined) {
-    menuRef.value.setCheckedKeys([])
-  }
-  menuExpand.value = false
-  menuNodeAll.value = false
-  deptExpand.value = true
-  deptNodeAll.value = false
-  form.value = {
-    roleId: undefined,
-    roleName: undefined,
-    roleKey: undefined,
-    roleSort: 0,
-    status: "0",
-    menuIds: [],
-    deptIds: [],
-    menuCheckStrictly: true,
-    deptCheckStrictly: true,
-    remark: undefined
-  }
-  proxy.resetForm("roleRef")
-}
-
-/** 添加角色 */
-function handleAdd() {
-  reset()
-  getMenuTreeselect()
-  open.value = true
-  title.value = "添加角色"
-}
-
-/** 修改角色 */
-function handleUpdate(row) {
-  reset()
-  const roleId = row.roleId || ids.value
-  const roleMenu = getRoleMenuTreeselect(roleId)
-  getRole(roleId).then(response => {
-    form.value = response.data
-    form.value.roleSort = Number(form.value.roleSort)
-    open.value = true
-    nextTick(() => {
-      roleMenu.then((res) => {
-        let checkedKeys = res.checkedKeys
-        checkedKeys.forEach((v) => {
-          nextTick(() => {
-            menuRef.value.setChecked(v, true, false)
-          })
+      // 生成客户ID
+      const newId = `CUST${(this.customers.length + 1).toString().padStart(3, '0')}`;
+      // 新增客户
+      this.customers.unshift({
+        id: newId,
+        name: this.newCustomer.name.trim(),
+        age: Number(this.newCustomer.age),
+        contact: this.newCustomer.contact.trim(),
+        status: this.newCustomer.status,
+        createTime: new Date().toLocaleString('zh-CN', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit'
         })
-      })
-    })
-  })
-  title.value = "修改角色"
-}
+      });
 
-/** 根据角色ID查询菜单树结构 */
-function getRoleMenuTreeselect(roleId) {
-  return roleMenuTreeselect(roleId).then(response => {
-    menuOptions.value = response.menus
-    return response
-  })
-}
+      alert('客户添加成功！');
+      this.closeAddModal();
+    },
+    // 编辑客户（加载数据）
+    editCustomer(customer) {
+      this.editCustomerData = { ...customer };
+      this.showEditCustomer = true;
+    },
+    // 更新客户
+    updateCustomer() {
+      // 校验
+      if (!this.editCustomerData.name.trim()) {
+        alert('客户姓名不能为空！');
+        return;
+      }
+      if (!this.editCustomerData.age || this.editCustomerData.age < 1 || this.editCustomerData.age > 120) {
+        alert('年龄需为1-120的数字！');
+        return;
+      }
+      if (!/^\d{7,11}$/.test(this.editCustomerData.contact.trim())) {
+        alert('联系方式需为7-11位数字！');
+        return;
+      }
+      // 检查联系方式重复（排除自身）
+      const isDuplicate = this.customers.some(
+        cust => cust.contact === this.editCustomerData.contact.trim() && cust.id !== this.editCustomerData.id
+      );
+      if (isDuplicate) {
+        alert('该联系方式已存在！');
+        return;
+      }
 
-/** 根据角色ID查询部门树结构 */
-function getDeptTree(roleId) {
-  return deptTreeSelect(roleId).then(response => {
-    deptOptions.value = response.depts
-    return response
-  })
-}
+      // 查找并更新
+      const index = this.customers.findIndex(cust => cust.id === this.editCustomerData.id);
+      if (index !== -1) {
+        this.customers[index] = {
+          ...this.customers[index],
+          name: this.editCustomerData.name.trim(),
+          age: Number(this.editCustomerData.age),
+          contact: this.editCustomerData.contact.trim(),
+          status: this.editCustomerData.status
+        };
+        alert('客户修改成功！');
+        this.closeEditModal();
+      }
+    },
+    // 删除客户
+    deleteCustomer(custId) {
+      if (confirm('确定要删除该客户吗？删除后不可恢复！')) {
+        this.customers = this.customers.filter(cust => cust.id !== custId);
+        alert('客户删除成功！');
+        // 重置分页（避免删除后无数据）
+        if (this.filteredCustomers.length === 0 && this.currentPage > 1) {
+          this.currentPage--;
+        }
+      }
+    },
 
-/** 树权限（展开/折叠）*/
-function handleCheckedTreeExpand(value, type) {
-  if (type == "menu") {
-    let treeList = menuOptions.value
-    for (let i = 0; i < treeList.length; i++) {
-      menuRef.value.store.nodesMap[treeList[i].id].expanded = value
-    }
-  } else if (type == "dept") {
-    let treeList = deptOptions.value
-    for (let i = 0; i < treeList.length; i++) {
-      deptRef.value.store.nodesMap[treeList[i].id].expanded = value
-    }
-  }
-}
+    // ===================== 查询与分页 =====================
+    // 搜索查询
+    handleQuery() {
+      this.currentPage = 1; // 重置到第一页
+    },
+    // 重置查询条件
+    handleReset() {
+      this.queryParams = { name: '', contact: '', status: '' };
+      this.currentPage = 1;
+    },
+    // 上一页
+    prevPage() {
+      if (this.currentPage > 1) {
+        this.currentPage--;
+      }
+    },
+    // 下一页
+    nextPage() {
+      if (this.currentPage < this.totalPages) {
+        this.currentPage++;
+      }
+    },
 
-/** 树权限（全选/全不选） */
-function handleCheckedTreeNodeAll(value, type) {
-  if (type == "menu") {
-    menuRef.value.setCheckedNodes(value ? menuOptions.value : [])
-  } else if (type == "dept") {
-    deptRef.value.setCheckedNodes(value ? deptOptions.value : [])
-  }
-}
+    // ===================== Excel导入 =====================
+    // 下载模板
+    downloadTemplate() {
+      try {
+        // 模板数据
+        const templateData = [
+          { '客户姓名': '示例1', '年龄': 30, '联系方式': '13800138001', '状态（活跃/非活跃/VIP）': '活跃' },
+          { '客户姓名': '示例2', '年龄': 45, '联系方式': '13900139002', '状态（活跃/非活跃/VIP）': 'VIP' }
+        ];
+        // 创建工作表
+        const ws = XLSX.utils.json_to_sheet(templateData);
+        // 创建工作簿
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '客户模板');
+        // 下载
+        XLSX.writeFile(wb, '客户导入模板.xlsx');
+      } catch (error) {
+        alert('模板下载失败，请手动创建Excel（表头：客户姓名、年龄、联系方式、状态）');
+        console.error('模板下载错误：', error);
+      }
+    },
+    // 选择文件
+    handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
 
-/** 树权限（父子联动） */
-function handleCheckedTreeConnect(value, type) {
-  if (type == "menu") {
-    form.value.menuCheckStrictly = value ? true : false
-  } else if (type == "dept") {
-    form.value.deptCheckStrictly = value ? true : false
-  }
-}
+      // 校验格式
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (!['xlsx', 'xls'].includes(ext)) {
+        alert('请选择.xlsx或.xls格式的文件！');
+        e.target.value = '';
+        return;
+      }
+      // 校验大小（5MB）
+      if (file.size > 5 * 1024 * 1024) {
+        alert('文件大小不能超过5MB！');
+        e.target.value = '';
+        return;
+      }
 
-/** 所有菜单节点数据 */
-function getMenuAllCheckedKeys() {
-  // 目前被选中的菜单节点
-  let checkedKeys = menuRef.value.getCheckedKeys()
-  // 半选中的菜单节点
-  let halfCheckedKeys = menuRef.value.getHalfCheckedKeys()
-  checkedKeys.unshift.apply(checkedKeys, halfCheckedKeys)
-  return checkedKeys
-}
+      // 保存文件信息
+      this.selectedFile = file;
+      this.selectedFileName = file.name;
+    },
+    // 清空已选文件
+    clearSelectedFile() {
+      this.selectedFile = null;
+      this.selectedFileName = '';
+      const fileInput = document.getElementById('excelFile');
+      if (fileInput) fileInput.value = '';
+    },
+    // 解析Excel数据
+    parseExcel(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const data = new Uint8Array(e.target.result);
+            const wb = XLSX.read(data, { type: 'array' });
+            // 读取第一个工作表
+            const wsName = wb.SheetNames[0];
+            const ws = wb.Sheets[wsName];
+            // 转换为JSON（表头映射）
+            const jsonData = XLSX.utils.sheet_to_json(ws, {
+              header: ['name', 'age', 'contact', 'status'], // 对应Excel列：姓名、年龄、联系方式、状态
+              skipHeader: 1 // 跳过第一行表头
+            });
+            // 过滤空行
+            const validRows = jsonData.filter(row => 
+              row.name || row.age || row.contact || row.status
+            );
+            resolve(validRows);
+          } catch (error) {
+            reject('文件解析失败：' + error.message);
+          }
+        };
+        reader.onerror = () => reject('文件读取失败，请检查文件是否损坏');
+        reader.readAsArrayBuffer(file);
+      });
+    },
+    // 校验导入数据
+    validateImportData(rawData) {
+      const validData = [];
+      const existingContacts = new Set(this.customers.map(cust => cust.contact));
+      const errorMsgList = [];
 
-/** 提交按钮 */
-function submitForm() {
-  proxy.$refs["roleRef"].validate(valid => {
-    if (valid) {
-      if (form.value.roleId != undefined) {
-        form.value.menuIds = getMenuAllCheckedKeys()
-        updateRole(form.value).then(response => {
-          proxy.$modal.msgSuccess("修改成功")
-          open.value = false
-          getList()
-        })
-      } else {
-        form.value.menuIds = getMenuAllCheckedKeys()
-        addRole(form.value).then(response => {
-          proxy.$modal.msgSuccess("新增成功")
-          open.value = false
-          getList()
-        })
+      rawData.forEach((row, index) => {
+        const rowNum = index + 2; // Excel行号（跳过表头，从第2行开始）
+        const data = {
+          name: (row.name || '').trim(),
+          age: Number(row.age) || 0,
+          contact: (row.contact || '').trim(),
+          status: (row.status || '活跃').trim().toLowerCase()
+        };
+
+        // 校验姓名
+        if (!data.name) {
+          errorMsgList.push(`第${rowNum}行：客户姓名不能为空`);
+          return;
+        }
+        // 校验年龄
+        if (isNaN(data.age) || data.age < 1 || data.age > 120) {
+          errorMsgList.push(`第${rowNum}行：年龄需为1-120的数字`);
+          return;
+        }
+        // 校验联系方式
+        if (!/^\d{7,11}$/.test(data.contact)) {
+          errorMsgList.push(`第${rowNum}行：联系方式需为7-11位数字`);
+          return;
+        }
+        // 校验重复联系方式
+        if (existingContacts.has(data.contact)) {
+          errorMsgList.push(`第${rowNum}行：联系方式已存在，跳过`);
+          return;
+        }
+        // 校验状态（自动修正）
+        if (!this.validStatus.includes(data.status)) {
+          data.status = 'active'; // 默认活跃
+        }
+
+        // 有效数据
+        validData.push(data);
+        existingContacts.add(data.contact);
+      });
+
+      return { validData, errorMsgList };
+    },
+    // 处理Excel导入
+    async handleExcelImport() {
+      if (!this.selectedFile) return;
+
+      try {
+        // 解析文件
+        const rawData = await this.parseExcel(this.selectedFile);
+        if (rawData.length === 0) {
+          alert('Excel文件中无有效数据！');
+          return;
+        }
+
+        // 校验数据
+        const { validData, errorMsgList } = this.validateImportData(rawData);
+        
+        // 显示错误信息
+        if (errorMsgList.length > 0) {
+          alert(`导入校验提示：\n${errorMsgList.join('\n')}`);
+        }
+
+        // 无有效数据
+        if (validData.length === 0) {
+          alert('没有可导入的有效数据！');
+          return;
+        }
+
+        // 批量添加客户
+        const newCustomers = validData.map(data => {
+          const newId = `CUST${(this.customers.length + 1).toString().padStart(3, '0')}`;
+          return {
+            id: newId,
+            name: data.name,
+            age: data.age,
+            contact: data.contact,
+            status: data.status,
+            createTime: new Date().toLocaleString('zh-CN', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit',
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+          };
+        });
+
+        // 添加到列表
+        this.customers.unshift(...newCustomers);
+
+        // 导入结果提示
+        alert(`导入完成！\n总数据：${rawData.length}条\n成功导入：${validData.length}条\n跳过无效/重复：${rawData.length - validData.length}条`);
+        
+        // 关闭弹窗并重置
+        this.closeExcelModal();
+      } catch (error) {
+        alert('导入失败：' + error);
+        console.error('导入错误：', error);
       }
     }
-  })
-}
-
-/** 取消按钮 */
-function cancel() {
-  open.value = false
-  reset()
-}
-
-/** 选择角色权限范围触发 */
-function dataScopeSelectChange(value) {
-  if (value !== "2") {
-    deptRef.value.setCheckedKeys([])
+  },
+  // 初始化：检查xlsx依赖
+  mounted() {
+    // 若未加载xlsx，动态引入CDN
+    if (!window.XLSX) {
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+      script.onload = () => {
+        console.log('XLSX库加载成功');
+      };
+      script.onerror = () => {
+        alert('Excel导入功能依赖的XLSX库加载失败，导入功能可能无法使用');
+      };
+      document.head.appendChild(script);
+    }
   }
-}
-
-/** 分配数据权限操作 */
-function handleDataScope(row) {
-  reset()
-  const deptTreeSelect = getDeptTree(row.roleId)
-  getRole(row.roleId).then(response => {
-    form.value = response.data
-    openDataScope.value = true
-    nextTick(() => {
-      deptTreeSelect.then(res => {
-        nextTick(() => {
-          if (deptRef.value) {
-            deptRef.value.setCheckedKeys(res.checkedKeys)
-          }
-        })
-      })
-    })
-  })
-  title.value = "分配数据权限"
-}
-
-/** 提交按钮（数据权限） */
-function submitDataScope() {
-  if (form.value.roleId != undefined) {
-    form.value.deptIds = getDeptAllCheckedKeys()
-    dataScope(form.value).then(response => {
-      proxy.$modal.msgSuccess("修改成功")
-      openDataScope.value = false
-      getList()
-    })
-  }
-}
-
-/** 取消按钮（数据权限）*/
-function cancelDataScope() {
-  openDataScope.value = false
-  reset()
-}
-
-getList()
+};
 </script>
+
+<style scoped>
+/* 基础样式重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+}
+
+.customer-container {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+}
+
+/* 导航栏样式 */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo i {
+  font-size: 1.8rem;
+  color: #1890ff;
+}
+
+.navbar-brand h1 {
+  font-size: 1.5rem;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.navbar-menu {
+  display: flex;
+  gap: 2rem;
+}
+
+.navbar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  color: #7f8c8d;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.navbar-item:hover, .navbar-item.active {
+  color: #1890ff;
+  background-color: #e3f2fd;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  transition: background-color 0.3s;
+}
+
+.user-info:hover {
+  background-color: #f8f9fa;
+}
+
+.user-avatar i {
+  font-size: 2rem;
+  color: #7f8c8d;
+}
+
+.user-name {
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+/* 主内容区域 */
+.main-content {
+  padding: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* 页面标题 */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.page-title {
+  font-size: 1.8rem;
+  color: #2c3e50;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.page-subtitle {
+  font-size: 1rem;
+  color: #7f8c8d;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+/* 按钮基础样式 */
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 0.85rem;
+}
+
+.btn-primary {
+  background-color: #1890ff;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background-color: #40a9ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid #d9d9d9;
+  color: #595959;
+}
+
+.btn-outline:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+/* 查询卡片 */
+.query-card {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  margin-bottom: 1.5rem;
+}
+
+.query-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.query-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 180px;
+  flex: 1;
+  max-width: 300px;
+}
+
+.query-label {
+  font-size: 0.9rem;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.query-input, .query-select {
+  padding: 0.6rem 1rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  transition: border-color 0.3s;
+}
+
+.query-input:focus, .query-select:focus {
+  outline: none;
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.query-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-left: auto;
+  margin-bottom: 0.6rem;
+}
+
+/* 内容卡片 */
+.content-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+/* 表格样式 */
+.table-container {
+  overflow-x: auto;
+}
+
+.customer-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.customer-table th {
+  background-color: #fafafa;
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.9rem;
+  color: #2c3e50;
+  font-weight: 600;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.customer-table td {
+  padding: 1rem;
+  border-bottom: 1px solid #e8e8e8;
+  font-size: 0.85rem;
+  color: #595959;
+}
+
+.customer-table tr:hover {
+  background-color: #fafafa;
+}
+
+/* 表格单元格样式 */
+.customer-id {
+  font-family: 'Courier New', monospace;
+  color: #1890ff;
+  font-weight: 600;
+}
+
+.customer-name {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #1890ff;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.status-badge.active {
+  background-color: #f6ffed;
+  color: #52c41a;
+  border: 1px solid #b7eb8f;
+}
+
+.status-badge.inactive {
+  background-color: #fff2f0;
+  color: #ff4d4f;
+  border: 1px solid #ffccc7;
+}
+
+.status-badge.vip {
+  background-color: #fff7e6;
+  color: #fa8c16;
+  border: 1px solid #ffd591;
+}
+
+/* 操作列 */
+.actions-col {
+  width: 180px;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.btn-action {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  min-width: 60px;
+  justify-content: center;
+  transition: all 0.3s;
+}
+
+.btn-action.edit {
+  background-color: #e6f7ff;
+  color: #1890ff;
+  border: 1px solid #91d5ff;
+}
+
+.btn-action.edit:hover {
+  background-color: #bae7ff;
+}
+
+.btn-action.delete {
+  background-color: #fff2f0;
+  color: #ff4d4f;
+  border: 1px solid #ffccc7;
+}
+
+.btn-action.delete:hover {
+  background-color: #ffccc7;
+}
+
+/* 空状态 */
+.empty-state {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: #bfbfbf;
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.3;
+}
+
+.empty-state p {
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+/* 分页样式 */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e8e8e8;
+}
+
+.pagination-info {
+  font-size: 0.85rem;
+  color: #8c8c8c;
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pagination-btn {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  background-color: #fff;
+  color: #595959;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+.pagination-btn:disabled {
+  background-color: #f5f5f5;
+  color: #bfbfbf;
+  cursor: not-allowed;
+}
+
+.pagination-text {
+  font-size: 0.85rem;
+  color: #595959;
+}
+
+/* 弹窗样式 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.modal-header h3 {
+  font-size: 1.2rem;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #8c8c8c;
+  cursor: pointer;
+  padding: 0.4rem;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.close-btn:hover {
+  background-color: #f5f5f5;
+  color: #595959;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+/* 表单样式 */
+.customer-form {
+  margin-bottom: 0;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.9rem;
+  color: #2c3e50;
+  font-weight: 500;
+}
+
+.form-label.required::after {
+  content: '*';
+  color: #ff4d4f;
+  margin-left: 4px;
+}
+
+.form-input, .form-select {
+  padding: 0.6rem 1rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  transition: all 0.3s;
+}
+
+.form-input:focus, .form-select:focus {
+  outline: none;
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  margin-top: 2rem;
+}
+
+/* Excel导入弹窗样式 */
+.import-tips {
+  background-color: #f0f7ff;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.tips-title {
+  font-size: 0.9rem;
+  color: #1890ff;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tips-list {
+  list-style: disc;
+  padding-left: 1.5rem;
+  font-size: 0.85rem;
+  color: #595959;
+  line-height: 1.6;
+}
+
+.template-download {
+  margin-bottom: 1.5rem;
+}
+
+.template-desc {
+  font-size: 0.8rem;
+  color: #8c8c8c;
+  margin-top: 0.5rem;
+}
+
+.file-upload-section {
+  margin-bottom: 1.5rem;
+}
+
+.file-upload-area {
+  margin-top: 0.5rem;
+}
+
+.upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  border: 2px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  background-color: #fafafa;
+}
+
+.upload-label:hover {
+  border-color: #1890ff;
+  background-color: #f0f7ff;
+}
+
+.upload-label i {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.upload-text {
+  font-size: 0.9rem;
+  color: #595959;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.upload-hint {
+  font-size: 0.8rem;
+  color: #8c8c8c;
+}
+
+.file-input {
+  display: none;
+}
+
+.selected-file {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.8rem;
+  background-color: #fafafa;
+  border-radius: 6px;
+  margin-top: 1rem;
+  font-size: 0.85rem;
+}
+
+.file-name {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #595959;
+}
+
+.remove-file-btn {
+  background: none;
+  border: none;
+  color: #8c8c8c;
+  cursor: pointer;
+  padding: 0.3rem;
+  border-radius: 4px;
+  transition: all 0.3s;
+}
+
+.remove-file-btn:hover {
+  color: #ff4d4f;
+  background-color: #fff2f0;
+}
+
+.import-actions {
+  margin-top: 1rem;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .navbar-menu {
+    gap: 1rem;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .query-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .query-group {
+    max-width: 100%;
+  }
+
+  .query-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .actions-cell {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .btn-action {
+    min-width: 100%;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .modal-content {
+    margin: 0.5rem;
+  }
+}
+</style>
+
+<!-- 引入Font Awesome图标库（确保图标正常显示） -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+<!-- 引入XLSX库（Excel解析依赖） -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
