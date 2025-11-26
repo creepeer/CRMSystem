@@ -1,33 +1,11 @@
 <template>
   <div class="customer-container">
-    <!-- 顶部导航栏 -->
+    <!-- 简化后导航栏（仅保留logo） -->
     <nav class="navbar">
       <div class="navbar-brand">
         <div class="logo">
           <i class="fas fa-chart-network"></i>
           <h1>先锋互联</h1>
-        </div>
-      </div>
-      <div class="navbar-menu">
-        <a href="#" class="navbar-item">
-          <i class="fas fa-home"></i>
-          <span>主页</span>
-        </a>
-        <a href="#" class="navbar-item">
-          <i class="fas fa-sitemap"></i>
-          <span>公司架构</span>
-        </a>
-        <a href="#" class="navbar-item active">
-          <i class="fas fa-users"></i>
-          <span>客户</span>
-        </a>
-      </div>
-      <div class="navbar-user">
-        <div class="user-info">
-          <div class="user-avatar">
-            <i class="fas fa-user-circle"></i>
-          </div>
-          <span class="user-name">管理员</span>
         </div>
       </div>
     </nav>
@@ -850,11 +828,10 @@ export default {
   background-color: #f5f7fa;
 }
 
-/* 导航栏样式 */
+/* 简化后导航栏样式 */
 .navbar {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: center;
   padding: 1rem 2rem;
   background-color: #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -878,51 +855,6 @@ export default {
   font-size: 1.5rem;
   color: #2c3e50;
   font-weight: 700;
-}
-
-.navbar-menu {
-  display: flex;
-  gap: 2rem;
-}
-
-.navbar-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1rem;
-  border-radius: 6px;
-  color: #7f8c8d;
-  text-decoration: none;
-  font-weight: 500;
-  transition: all 0.3s;
-}
-
-.navbar-item:hover, .navbar-item.active {
-  color: #1890ff;
-  background-color: #e3f2fd;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
-  transition: background-color 0.3s;
-}
-
-.user-info:hover {
-  background-color: #f8f9fa;
-}
-
-.user-avatar i {
-  font-size: 2rem;
-  color: #7f8c8d;
-}
-
-.user-name {
-  color: #2c3e50;
-  font-weight: 500;
 }
 
 /* 主内容区域 */
@@ -1483,15 +1415,7 @@ export default {
 /* 响应式设计 */
 @media (max-width: 768px) {
   .navbar {
-    flex-direction: column;
     padding: 1rem;
-    gap: 1rem;
-  }
-
-  .navbar-menu {
-    gap: 1rem;
-    width: 100%;
-    justify-content: center;
   }
 
   .main-content {
