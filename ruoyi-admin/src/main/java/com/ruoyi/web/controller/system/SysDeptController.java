@@ -42,6 +42,7 @@ public class SysDeptController extends BaseController
     public AjaxResult list(SysDept dept)
     {
         List<SysDept> depts = deptService.selectDeptList(dept);
+
         return success(depts);
     }
 
@@ -81,6 +82,7 @@ public class SysDeptController extends BaseController
             return error("新增部门'" + dept.getDeptName() + "'失败，部门名称已存在");
         }
         dept.setCreateBy(getUsername());
+
         return toAjax(deptService.insertDept(dept));
     }
 
