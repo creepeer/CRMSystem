@@ -54,6 +54,10 @@ public class SysDept extends BaseEntity
     
     /** 子部门 */
     private List<SysDept> children = new ArrayList<SysDept>();
+    /** 租户ID */
+    private String ancentId;
+
+
 
     public Long getDeptId()
     {
@@ -199,5 +203,12 @@ public class SysDept extends BaseEntity
             .append("updateBy", getUpdateBy())
             .append("updateTime", getUpdateTime())
             .toString();
+    }
+    public String getAncentId() {
+        return ancentId;
+    }
+
+    public void setAncentId(String ancentId) {
+        this.ancentId = ancentId;
     }
 }

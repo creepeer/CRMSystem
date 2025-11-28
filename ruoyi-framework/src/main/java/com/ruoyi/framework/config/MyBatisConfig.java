@@ -5,8 +5,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
+
 import javax.sql.DataSource;
+
 import org.apache.ibatis.io.VFS;
+import org.apache.ibatis.plugin.Interceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.boot.autoconfigure.SpringBootVFS;
@@ -22,11 +26,14 @@ import org.springframework.core.type.classreading.CachingMetadataReaderFactory;
 import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 import org.springframework.util.ClassUtils;
+
+import com.github.pagehelper.PageInterceptor;
 import com.ruoyi.common.utils.StringUtils;
+import com.ruoyi.framework.interceptor.TenantInterceptor;
 
 /**
  * Mybatis支持*匹配扫描包
- * 
+ *
  * @author ruoyi
  */
 @Configuration
@@ -34,6 +41,9 @@ public class MyBatisConfig
 {
     @Autowired
     private Environment env;
+
+    @Autowired
+    private TenantInterceptor tenantInterceptor;
 
     static final String DEFAULT_RESOURCE_PATTERN = "**/*.class";
 
@@ -113,20 +123,44 @@ public class MyBatisConfig
         return resources.toArray(new Resource[resources.size()]);
     }
 
-    @Bean
-    public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception
-    {
-        String typeAliasesPackage = env.getProperty("mybatis.typeAliasesPackage");
-        String mapperLocations = env.getProperty("mybatis.mapperLocations");
-        String configLocation = env.getProperty("mybatis.configLocation");
-        typeAliasesPackage = setTypeAliasesPackage(typeAliasesPackage);
-        VFS.addImplClass(SpringBootVFS.class);
+//    @Bean
+//    public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception
+//    {
+//        String typeAliasesPackage = env.getProperty("mybatis.typeAliasesPackage");
+//        String mapperLocations = env.getProperty("mybatis.mapperLocations");
+//        String configLocation = env.getProperty("mybatis.configLocation");
+//        typeAliasesPackage = setTypeAliasesPackage(typeAliasesPackage);
+//        VFS.addImplClass(SpringBootVFS.class);
+//
+//        final SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
+//        sessionFactory.setDataSource(dataSource);
+//        sessionFactory.setTypeAliasesPackage(typeAliasesPackage);
+//        sessionFactory.setMapperLocations(resolveMapperLocations(StringUtils.split(mapperLocations, ",")));
+//        sessionFactory.setConfigLocation(new DefaultResourceLoader().getResource(configLocation));
+//
+//        // 添加多租户拦截器
+//        Interceptor[] plugins = new Interceptor[]{
+//                tenantInterceptor,  // 多租户拦截器
+//                pageInterceptor()   // 分页拦截器
+//        };
+//        sessionFactory.setPlugins(plugins);
+//
+//        return sessionFactory.getObject();
+//    }
 
-        final SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
-        sessionFactory.setDataSource(dataSource);
-        sessionFactory.setTypeAliasesPackage(typeAliasesPackage);
-        sessionFactory.setMapperLocations(resolveMapperLocations(StringUtils.split(mapperLocations, ",")));
-        sessionFactory.setConfigLocation(new DefaultResourceLoader().getResource(configLocation));
-        return sessionFactory.getObject();
+    /**
+     * 分页拦截器
+     */
+    @Bean
+    public PageInterceptor pageInterceptor()
+    {
+        PageInterceptor pageInterceptor = new PageInterceptor();
+        Properties properties = new Properties();
+        properties.setProperty("helperDialect", "mysql");
+        properties.setProperty("reasonable", "true");
+        properties.setProperty("supportMethodsArguments", "true");
+        properties.setProperty("params", "count=countSql");
+        pageInterceptor.setProperties(properties);
+        return pageInterceptor;
     }
 }
