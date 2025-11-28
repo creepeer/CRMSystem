@@ -191,21 +191,29 @@ getCookie()
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #f5f5f5;
-  background-image: 
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 35px,
-      rgba(0, 0, 0, 0.02) 35px,
-      rgba(0, 0, 0, 0.02) 70px
-    );
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.1) 0%, rgba(47, 84, 235, 0.1) 100%),
+              url('@/assets/images/login-background.jpg') center/cover no-repeat;
+  position: relative;
+  
+  // 添加深色遮罩层，提高文字可读性
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.5);
+    z-index: 0;
+  }
 }
 
 .login-container {
   width: 100%;
   max-width: 400px;
   padding: 20px;
+  position: relative;
+  z-index: 1;
 }
 
 .login-header {
@@ -222,18 +230,26 @@ getCookie()
   .system-title {
     font-size: 24px;
     font-weight: 600;
-    color: #333;
+    color: #1890ff;
     margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 }
 
 .login-form-wrapper {
+  background: rgba(255, 255, 255, 0.95);
+  padding: 40px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  
   .form-title {
     text-align: center;
-    font-size: 16px;
-    color: #1890ff;
+    font-size: 18px;
+    color: #333;
     margin-bottom: 30px;
-    font-weight: 500;
+    font-weight: 600;
   }
 }
 
@@ -244,18 +260,21 @@ getCookie()
   
   .custom-input {
     :deep(.el-input__wrapper) {
-      background: #fff;
-      border: 1px solid #d9d9d9;
-      border-radius: 4px;
-      box-shadow: none;
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       padding: 8px 15px;
+      transition: all 0.3s ease;
       
       &:hover {
-        border-color: #b3b3b3;
+        border-color: #1890ff;
+        box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
       }
       
       &.is-focus {
         border-color: #1890ff;
+        box-shadow: 0 2px 12px rgba(24, 144, 255, 0.2);
       }
     }
     
@@ -263,9 +282,10 @@ getCookie()
       height: 44px;
       line-height: 44px;
       font-size: 14px;
+      background: transparent;
       
       &::placeholder {
-        color: #999;
+        color: #adb5bd;
       }
     }
   }
@@ -288,8 +308,13 @@ getCookie()
       width: 100%;
       height: 100%;
       cursor: pointer;
-      border-radius: 4px;
-      border: 1px solid #d9d9d9;
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        border-color: #1890ff;
+      }
     }
   }
 }
@@ -310,34 +335,43 @@ getCookie()
     width: 100%;
     height: 48px;
     font-size: 16px;
-    border-radius: 4px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
   }
   
   .login-btn {
-    background: #8c8c8c;
-    border: none;
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
     color: #fff;
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
     
     &:hover {
-      background: #737373;
+      background: linear-gradient(135deg, #40a9ff 0%, #1890ff 100%);
+      box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+      transform: translateY(-2px);
     }
     
     &:active {
-      background: #595959;
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
     }
   }
   
   .register-btn {
-    background: #8c8c8c;
-    border: none;
+    background: linear-gradient(135deg, #52c41a 0%, #389e0d 100%);
     color: #fff;
+    box-shadow: 0 4px 12px rgba(82, 196, 26, 0.3);
     
     &:hover {
-      background: #737373;
+      background: linear-gradient(135deg, #73d13d 0%, #52c41a 100%);
+      box-shadow: 0 6px 16px rgba(82, 196, 26, 0.4);
+      transform: translateY(-2px);
     }
     
     &:active {
-      background: #595959;
+      transform: translateY(0);
+      box-shadow: 0 2px 8px rgba(82, 196, 26, 0.3);
     }
   }
 }
@@ -349,14 +383,20 @@ getCookie()
   height: 40px;
   line-height: 40px;
   text-align: center;
-  color: #999;
+  color: rgba(0, 0, 0, 0.6);
   font-family: Arial, sans-serif;
   font-size: 12px;
   letter-spacing: 1px;
+  z-index: 1;
 }
 
 // 移除默认的图标样式
 :deep(.el-input__prefix) {
   display: none;
+}
+
+// 加载状态样式
+:deep(.el-button.is-loading) {
+  opacity: 0.8;
 }
 </style>
