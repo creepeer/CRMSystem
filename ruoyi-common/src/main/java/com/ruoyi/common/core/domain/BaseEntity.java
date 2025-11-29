@@ -38,17 +38,14 @@ public class BaseEntity implements Serializable
     /** 备注 */
     private String remark;
 
-    public Long getTenantId() {
-        return tenantId;
-    }
 
-    public void setTenantId(Long tenantId) {
-        this.tenantId = tenantId;
-    }
+
 
     /** 请求参数 */
 
     private Long tenantId;
+
+
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private Map<String, Object> params;
@@ -125,5 +122,12 @@ public class BaseEntity implements Serializable
     public void setParams(Map<String, Object> params)
     {
         this.params = params;
+    }
+    public Long getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
     }
 }

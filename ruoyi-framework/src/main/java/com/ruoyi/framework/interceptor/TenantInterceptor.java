@@ -1,6 +1,6 @@
 package com.ruoyi.framework.interceptor;
 
-import com.ruoyi.framework.security.context.TenantContext;
+import com.ruoyi.framework.security.context.TenantContextHolder;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;
@@ -41,7 +41,7 @@ public class TenantInterceptor implements Interceptor {
         Object parameter = args[1];
 
         // 获取当前租户ID
-        Long currentTenantId = TenantContext.getCurrentTenant();
+        Long currentTenantId = TenantContextHolder.getCurrentTenantId();
 
         // 获取SQL命令类型
         SqlCommandType sqlCommandType = ms.getSqlCommandType();
