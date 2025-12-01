@@ -42,7 +42,6 @@ public class SysDeptController extends BaseController
     public AjaxResult list(SysDept dept)
     {
         List<SysDept> depts = deptService.selectDeptList(dept);
-
         return success(depts);
     }
 

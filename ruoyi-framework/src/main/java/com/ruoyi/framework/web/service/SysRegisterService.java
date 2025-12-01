@@ -44,7 +44,7 @@ public class SysRegisterService
         String msg = "", username = registerBody.getUsername(), password = registerBody.getPassword();
         SysUser sysUser = new SysUser();
         sysUser.setUserName(username);
-
+        sysUser.setTenantId(registerBody.getCompanyId());
         // 验证码开关
         boolean captchaEnabled = configService.selectCaptchaEnabled();
         if (captchaEnabled)

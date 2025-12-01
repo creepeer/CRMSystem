@@ -53,7 +53,7 @@ public class UserDetailsServiceImpl implements UserDetailsService
             log.info("登录用户：{} 已被停用.", username);
             throw new ServiceException(MessageUtils.message("user.blocked"));
         }
-
+        System.out.println("userten"+user.getTenantId());
         passwordService.validate(user);
 
         return createLoginUser(user);
@@ -61,6 +61,7 @@ public class UserDetailsServiceImpl implements UserDetailsService
 
     public UserDetails createLoginUser(SysUser user)
     {
-        return new LoginUser(user.getUserId(), user.getDeptId(), user, permissionService.getMenuPermission(user));
+
+        return new LoginUser(user.getUserId(), user.getDeptId(), user, permissionService.getMenuPermission(user),user.getTenantId());
     }
 }

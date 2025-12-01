@@ -1,6 +1,6 @@
 package com.ruoyi.framework.interceptor;
 
-import com.ruoyi.framework.security.context.TenantContext;
+import com.ruoyi.framework.security.context.TenantContextHolder;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.mapping.MappedStatement;
 import org.apache.ibatis.mapping.SqlCommandType;
@@ -20,15 +20,16 @@ import java.util.Properties;
 })
 public class TenantInterceptor implements Interceptor {
 
-    // 需要租户隔离的表
+    // 租户隔离表
     private static final String[] TENANT_TABLES = {
-            "sys_user", "sys_dept", "sys_role", "sys_post", "sys_menu",
+            "sys_user", "sys_dept", "sys_role", "sys_post",
             "sys_config", "sys_dict_type", "sys_dict_data", "n_company",
             "gen_table", "gen_table_column", "sys_logininfor", "sys_oper_log", "sys_job_log"
     };
 
     // 忽略租户隔离的表
     private static final String[] IGNORE_TABLES = {
+            "sys_menu","sys_role_dept","sys_role_menu","sys_user_role","sys_user_post",
             "sys_tenant", "qrtz_blob_triggers", "qrtz_calendars", "qrtz_cron_triggers",
             "qrtz_fired_triggers", "qrtz_job_details", "qrtz_locks", "qrtz_paused_trigger_grps",
             "qrtz_scheduler_state", "qrtz_simple_triggers", "qrtz_simprop_triggers", "qrtz_triggers"
@@ -41,7 +42,7 @@ public class TenantInterceptor implements Interceptor {
         Object parameter = args[1];
 
         // 获取当前租户ID
-        Long currentTenantId = TenantContext.getCurrentTenant();
+        Long currentTenantId = TenantContextHolder.getCurrentTenantId();
 
         // 获取SQL命令类型
         SqlCommandType sqlCommandType = ms.getSqlCommandType();

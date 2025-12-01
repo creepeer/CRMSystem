@@ -71,6 +71,11 @@ public class LoginUser implements UserDetails
      */
     private SysUser user;
 
+    private Long tenantId;
+
+
+
+
     public LoginUser()
     {
     }
@@ -81,12 +86,13 @@ public class LoginUser implements UserDetails
         this.permissions = permissions;
     }
 
-    public LoginUser(Long userId, Long deptId, SysUser user, Set<String> permissions)
+    public LoginUser(Long userId, Long deptId, SysUser user, Set<String> permissions,Long tenantId)
     {
         this.userId = userId;
         this.deptId = deptId;
         this.user = user;
         this.permissions = permissions;
+        this.tenantId=tenantId;
     }
 
     public Long getUserId()
@@ -256,6 +262,14 @@ public class LoginUser implements UserDetails
     public void setUser(SysUser user)
     {
         this.user = user;
+    }
+
+    public Long getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(Long tenantId) {
+        this.tenantId = tenantId;
     }
 
     @Override

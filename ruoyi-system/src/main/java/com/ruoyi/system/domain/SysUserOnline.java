@@ -1,11 +1,13 @@
 package com.ruoyi.system.domain;
 
+import com.ruoyi.common.core.domain.entity.SysTenant;
+
 /**
  * 当前在线会话
  * 
  * @author ruoyi
  */
-public class SysUserOnline
+public class SysUserOnline extends SysTenant
 {
     /** 会话编号 */
     private String tokenId;

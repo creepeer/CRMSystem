@@ -7,5 +7,12 @@ package com.ruoyi.common.core.domain.model;
  */
 public class RegisterBody extends LoginBody
 {
+    private  Long  companyId;
 
+    public Long getCompanyId() {
+        return companyId;
+    }
+    public void setCompanyId(Long companyId) {
+        this.companyId = companyId;
+    }
 }

@@ -92,6 +92,8 @@ public class SysUser extends BaseEntity
     /** 角色ID */
     private Long roleId;
 
+
+
     public SysUser()
     {
 
@@ -310,10 +312,12 @@ public class SysUser extends BaseEntity
         this.roleId = roleId;
     }
 
+
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
             .append("userId", getUserId())
+            .append("tenantId",getTenantId())
             .append("deptId", getDeptId())
             .append("userName", getUserName())
             .append("nickName", getNickName())
@@ -333,6 +337,7 @@ public class SysUser extends BaseEntity
             .append("updateTime", getUpdateTime())
             .append("remark", getRemark())
             .append("dept", getDept())
+
             .toString();
     }
 }
