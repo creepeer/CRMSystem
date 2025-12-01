@@ -45,6 +45,7 @@ public class SysDeptServiceImpl implements ISysDeptService
     @DataScope(deptAlias = "d")
     public List<SysDept> selectDeptList(SysDept dept)
     {
+
         return deptMapper.selectDeptList(dept);
     }
 
@@ -124,6 +125,7 @@ public class SysDeptServiceImpl implements ISysDeptService
     @Override
     public SysDept selectDeptById(Long deptId)
     {
+
         return deptMapper.selectDeptById(deptId);
     }
 
