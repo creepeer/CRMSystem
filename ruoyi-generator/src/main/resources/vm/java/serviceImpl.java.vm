@@ -1,5 +1,5 @@
 package ${packageName}.service.impl;
-
+import com.baomidou.mybatisplus.annotation.TableName;
 import java.util.List;
 #foreach ($column in $columns)
 #if($column.javaField == 'createTime' || $column.javaField == 'updateTime')

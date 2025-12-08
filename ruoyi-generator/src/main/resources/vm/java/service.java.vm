@@ -1,5 +1,5 @@
 package ${packageName}.service;
-
+import com.baomidou.mybatisplus.annotation.TableName;
 import java.util.List;
 import ${packageName}.domain.${ClassName};
 

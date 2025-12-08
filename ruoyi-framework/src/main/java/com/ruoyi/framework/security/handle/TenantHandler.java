@@ -25,14 +25,19 @@ public class TenantHandler implements TenantLineHandler {
             "sys_dict_type",    // 字典类型表
             "sys_dict_data",    // 字典数据表
             "sys_job",          // 定时任务表
+            "sys_job_log",
             "sys_logininfor",   // 登录日志表
-            "sys_oper_log",     // 操作日志表
+            "sys_oper_log",    // 操作日志表
+            "sys_notice",
             "sys_menu",
+            "sys_role",
             "sys_user",
             "sys_role_dept",
             "sys_user_role",
             "sys_user_post",
             "sys_role_menu",
+            "gen_table",
+            "gen_table_column",
             // Quartz 相关表
             "qrtz_blob_triggers", "qrtz_calendars", "qrtz_cron_triggers",
             "qrtz_fired_triggers", "qrtz_job_details", "qrtz_locks",

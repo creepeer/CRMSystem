@@ -76,7 +76,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		</where>
 	</select>
 
-	<select id="selectDbTableList" parameterType="GenTable" resultMap="GenTableResult">
+	<select id="selectDbTableList" parameterType="GenTable" resultMap="GenTableResult" statementType="STATEMENT">
 		select table_name, table_comment, create_time, update_time from information_schema.tables
 		where table_schema = (select database())
 		AND table_name NOT LIKE 'qrtz\_%' AND table_name NOT LIKE 'gen\_%'
@@ -93,7 +93,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		<if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
 			AND date_format(create_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
 		</if>
-        order by create_time desc
+		order by create_time desc
 	</select>
 	
 	<select id="selectDbTableListByNames" resultMap="GenTableResult">

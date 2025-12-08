@@ -1,5 +1,5 @@
 package ${packageName}.domain;
-
+import com.baomidou.mybatisplus.annotation.TableName;
 #foreach ($import in $importList)
 import ${import};
 #end

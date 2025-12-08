@@ -1,4 +1,6 @@
 package ${packageName}.mapper;
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 import java.util.List;
 import ${packageName}.domain.${ClassName};
@@ -12,7 +14,7 @@ import ${packageName}.domain.${subClassName};
  * @author ${author}
  * @date ${datetime}
  */
-public interface ${ClassName}Mapper 
+public interface ${ClassName}Mapper extends BaseMapper<${ClassName}>
 {
     /**
      * 查询${functionName}

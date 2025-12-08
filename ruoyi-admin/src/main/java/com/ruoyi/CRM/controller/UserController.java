@@ -1,8 +1,11 @@
-package com.ruoyi.web.controller.system;
+package com.ruoyi.CRM.controller;
 
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.CRM.DTO.UserAdd;
+import com.ruoyi.CRM.domain.User;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -34,12 +37,12 @@ import com.ruoyi.system.service.ISysUserService;
 
 /**
  * 用户信息
- * 
+ *
  * @author ruoyi
  */
 @RestController
-@RequestMapping("/system/user")
-public class SysUserController extends BaseController
+@RequestMapping("/company/staff")
+public class UserController extends BaseController
 {
     @Autowired
     private ISysUserService userService;
@@ -124,10 +127,18 @@ public class SysUserController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:user:add')")
     @Log(title = "用户管理", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@Validated @RequestBody SysUser user)
+    public AjaxResult add(@Validated @RequestBody UserAdd userAdd)
     {
-        deptService.checkDeptDataScope(user.getDeptId());
-        roleService.checkRoleDataScope(user.getRoleIds());
+        deptService.checkDeptDataScope(userAdd.getDeptId());
+        SysUser user=new SysUser();
+        user.setUserId(userAdd.getUserId());
+        user.setEmail(userAdd.getEmail());
+        user.setDeptId(userAdd.getDeptId());
+        user.setNickName(userAdd.getNickName());
+        user.setUserName(userAdd.getUserName());
+        user.setRoleId(userAdd.getRoleId());
+        user.setRemark(userAdd.getRemark());
+        user.setTenantId(userAdd.getTenantId());
         if (!userService.checkUserNameUnique(user))
         {
             return error("新增用户'" + user.getUserName() + "'失败，登录账号已存在");
