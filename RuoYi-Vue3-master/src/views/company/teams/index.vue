@@ -1,5 +1,5 @@
 <template>
-  <div class="dept-container">
+  <div class="app-container">
     <!-- 导航栏 -->
     <nav class="navbar">
       <div class="navbar-brand">
@@ -72,18 +72,26 @@
       <!-- 部门列表 -->
       <div class="content-card">
         <div class="table-container">
-          <div class="dept-tree" v-if="refreshTable && !loading">
+          <div v-if="refreshTable && !loading" class="dept-tree">
+            <!-- 第一级部门（公司） -->
             <div 
               v-for="dept in deptList" 
               :key="dept.deptId"
               class="dept-tree-item"
             >
-              <!-- 部门项 -->
+              <!-- 公司级部门 -->
               <div class="dept-item">
                 <div class="dept-item-main">
                   <div class="dept-item-content">
-                    <div class="dept-icon" @click="toggleDept(dept)">
+                    <div 
+                      v-if="dept.children && dept.children.length > 0"
+                      class="dept-icon" 
+                      @click="toggleDeptExpand(dept.deptId)"
+                    >
                       <i :class="dept._expanded ? 'fas fa-folder-open' : 'fas fa-folder'"></i>
+                    </div>
+                    <div v-else class="dept-icon">
+                      <i class="fas fa-folder"></i>
                     </div>
                     <div class="dept-info">
                       <div class="dept-name">
@@ -121,10 +129,11 @@
                 </div>
               </div>
 
-              <!-- 子部门 -->
+              <!-- 第二级部门（子公司） -->
               <div 
-                v-show="dept._expanded && dept.children && dept.children.length > 0"
+                v-if="dept.children && dept.children.length > 0 && dept._expanded"
                 class="dept-children"
+                style="margin-left: 3rem;"
               >
                 <div 
                   v-for="child in dept.children" 
@@ -134,7 +143,14 @@
                   <div class="dept-item">
                     <div class="dept-item-main">
                       <div class="dept-item-content">
-                        <div class="dept-icon">
+                        <div 
+                          v-if="child.children && child.children.length > 0"
+                          class="dept-icon" 
+                          @click="toggleDeptExpand(child.deptId)"
+                        >
+                          <i :class="child._expanded ? 'fas fa-folder-open' : 'fas fa-folder'"></i>
+                        </div>
+                        <div v-else class="dept-icon">
                           <i class="fas fa-folder"></i>
                         </div>
                         <div class="dept-info">
@@ -165,6 +181,57 @@
                           <i class="fas fa-trash"></i>
                           删除
                         </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 第三级部门（孙公司/小组） -->
+                  <div 
+                    v-if="child.children && child.children.length > 0 && child._expanded"
+                    class="dept-children"
+                    style="margin-left: 3rem; border-left: 2px dashed #e8e8e8; padding-left: 1.5rem;"
+                  >
+                    <div 
+                      v-for="grandChild in child.children" 
+                      :key="grandChild.deptId"
+                      class="dept-child-item"
+                    >
+                      <div class="dept-item">
+                        <div class="dept-item-main">
+                          <div class="dept-item-content">
+                            <div class="dept-icon">
+                              <i class="fas fa-folder"></i>
+                            </div>
+                            <div class="dept-info">
+                              <div class="dept-name">
+                                {{ grandChild.deptName }}
+                                <span class="order-num">排序：{{ grandChild.orderNum }}</span>
+                              </div>
+                              <div class="dept-details">
+                                <span class="status-badge" :class="grandChild.status === '0' ? 'active' : 'inactive'">
+                                  {{ getStatusText(grandChild.status) }}
+                                </span>
+                                <span class="create-time">
+                                  创建：{{ formatTime(grandChild.createTime) }}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="dept-actions">
+                            <button class="btn-action edit" @click="handleUpdate(grandChild)">
+                              <i class="fas fa-edit"></i>
+                              修改
+                            </button>
+                            <button class="btn-action add" @click="handleAdd(grandChild)">
+                              <i class="fas fa-plus"></i>
+                              新增子部门
+                            </button>
+                            <button class="btn-action delete" @click="handleDelete(grandChild)">
+                              <i class="fas fa-trash"></i>
+                              删除
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -398,45 +465,6 @@ const showDeleteConfirm = ref(false)
 const deleteDeptId = ref(null)
 const deleteDeptName = ref('')
 
-// 处理部门树展开状态
-const processedDeptList = computed(() => {
-  const expandDept = (depts) => {
-    return depts.map(dept => {
-      const expandedDept = {
-        ...dept,
-        _expanded: isExpandAll.value
-      }
-      if (dept.children && dept.children.length > 0) {
-        expandedDept.children = expandDept(dept.children)
-      }
-      return expandedDept
-    })
-  }
-  return expandDept(deptList.value)
-})
-
-// 过滤部门选项用于搜索
-const filteredDeptOptions = computed(() => {
-  if (!treeSearch.value) return deptOptions.value
-  
-  const searchTerm = treeSearch.value.toLowerCase()
-  const filterDepts = (depts, level = 0) => {
-    return depts.filter(dept => {
-      const matches = dept.deptName.toLowerCase().includes(searchTerm)
-      const childMatches = dept.children ? filterDepts(dept.children, level + 1) : []
-      
-      if (matches) {
-        return { ...dept, level }
-      } else if (childMatches.length > 0) {
-        return { ...dept, level, children: childMatches }
-      }
-      return null
-    }).filter(Boolean)
-  }
-  
-  return filterDepts(deptOptions.value)
-})
-
 // 主数据对象
 const data = reactive({
   form: {
@@ -461,7 +489,21 @@ const { queryParams, form } = toRefs(data)
 function getList() {
   loading.value = true
   listDept(queryParams.value).then(response => {
-    deptList.value = proxy.handleTree(response.data, "deptId")
+    // 初始化展开状态
+    const initExpandStatus = (depts) => {
+      return depts.map(dept => {
+        const newDept = {
+          ...dept,
+          _expanded: isExpandAll.value
+        }
+        if (dept.children && dept.children.length > 0) {
+          newDept.children = initExpandStatus(dept.children)
+        }
+        return newDept
+      })
+    }
+    
+    deptList.value = initExpandStatus(proxy.handleTree(response.data, "deptId"))
     loading.value = false
   }).catch(() => {
     loading.value = false
@@ -508,11 +550,63 @@ function selectDept(dept) {
   treeSearch.value = ''
 }
 
-/** 切换部门展开状态 */
-function toggleDept(dept) {
-  if (dept.children && dept.children.length > 0) {
-    dept._expanded = !dept._expanded
+/** 过滤部门选项用于搜索 */
+const filteredDeptOptions = computed(() => {
+  if (!treeSearch.value) {
+    // 给每个部门添加层级信息
+    const addLevelInfo = (depts, level = 0) => {
+      return depts.map(dept => {
+        const newDept = { ...dept, level }
+        if (dept.children && dept.children.length > 0) {
+          newDept.children = addLevelInfo(dept.children, level + 1)
+        }
+        return newDept
+      })
+    }
+    return addLevelInfo(deptOptions.value)
   }
+  
+  const searchTerm = treeSearch.value.toLowerCase()
+  const filterDepts = (depts, level = 0) => {
+    return depts.filter(dept => {
+      const matches = dept.deptName.toLowerCase().includes(searchTerm)
+      const childMatches = dept.children ? filterDepts(dept.children, level + 1) : []
+      
+      if (matches) {
+        return { ...dept, level }
+      } else if (childMatches.length > 0) {
+        return { ...dept, level, children: childMatches }
+      }
+      return null
+    }).filter(Boolean)
+  }
+  
+  return filterDepts(deptOptions.value)
+})
+
+/** 切换部门展开状态 */
+function toggleDeptExpand(deptId) {
+  const toggle = (depts) => {
+    for (const dept of depts) {
+      if (dept.deptId === deptId) {
+        dept._expanded = !dept._expanded
+        return true
+      }
+      if (dept.children && dept.children.length > 0) {
+        if (toggle(dept.children)) {
+          return true
+        }
+      }
+    }
+    return false
+  }
+  
+  toggle(deptList.value)
+  // 触发视图更新
+  refreshTable.value = false
+  nextTick(() => {
+    refreshTable.value = true
+  })
 }
 
 /** 取消按钮 */
@@ -570,6 +664,18 @@ function handleAdd(row) {
 /** 展开/折叠操作 */
 function toggleExpandAll() {
   isExpandAll.value = !isExpandAll.value
+  
+  // 递归设置所有部门的展开状态
+  const setAllExpand = (depts, expand) => {
+    depts.forEach(dept => {
+      dept._expanded = expand
+      if (dept.children && dept.children.length > 0) {
+        setAllExpand(dept.children, expand)
+      }
+    })
+  }
+  
+  setAllExpand(deptList.value, isExpandAll.value)
   refreshTable.value = false
   nextTick(() => {
     refreshTable.value = true
@@ -669,7 +775,7 @@ getList()
   font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
 }
 
-.dept-container {
+.app-container {
   min-height: 100vh;
   background-color: #f5f7fa;
 }
@@ -888,6 +994,7 @@ getList()
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s;
+  flex-shrink: 0;
 }
 
 .dept-icon:hover {
@@ -896,6 +1003,7 @@ getList()
 
 .dept-info {
   flex: 1;
+  min-width: 0;
 }
 
 .dept-name {
@@ -906,6 +1014,7 @@ getList()
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .order-num {
@@ -918,6 +1027,7 @@ getList()
   display: flex;
   gap: 1.5rem;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .status-badge {
@@ -926,6 +1036,7 @@ getList()
   font-size: 0.75rem;
   font-weight: 500;
   display: inline-block;
+  white-space: nowrap;
 }
 
 .status-badge.active {
@@ -943,11 +1054,13 @@ getList()
 .create-time {
   font-size: 0.85rem;
   color: #8c8c8c;
+  white-space: nowrap;
 }
 
 .dept-actions {
   display: flex;
   gap: 0.5rem;
+  flex-shrink: 0;
 }
 
 .btn-action {
@@ -963,6 +1076,7 @@ getList()
   min-width: 80px;
   justify-content: center;
   transition: all 0.3s;
+  white-space: nowrap;
 }
 
 .btn-action.edit {
@@ -996,23 +1110,11 @@ getList()
 }
 
 .dept-children {
-  margin-left: 3rem;
-  border-left: 2px dashed #e8e8e8;
-  padding-left: 1.5rem;
+  margin-top: 0.5rem;
 }
 
 .dept-child-item {
   margin-top: 0.5rem;
-}
-
-.dept-child-item .dept-item {
-  border-color: #f0f0f0;
-  background-color: #fafafa;
-}
-
-.dept-child-item .dept-icon {
-  background-color: #f6ffed;
-  color: #52c41a;
 }
 
 /* 加载状态 */
@@ -1367,15 +1469,12 @@ getList()
 
   .dept-actions {
     justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .btn-action {
     min-width: auto;
     flex: 1;
-  }
-
-  .dept-children {
-    margin-left: 1rem;
   }
 
   .dept-details {
@@ -1384,8 +1483,37 @@ getList()
     gap: 0.5rem;
   }
 
+  .dept-name {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .order-num {
+    margin-top: 0.25rem;
+  }
+
   .modal-content {
     margin: 0.5rem;
+  }
+  
+  .dept-children {
+    margin-left: 1rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .dept-actions {
+    flex-direction: column;
+  }
+  
+  .btn-action {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .dept-item-main {
+    padding: 0.75rem;
   }
 }
 </style>
