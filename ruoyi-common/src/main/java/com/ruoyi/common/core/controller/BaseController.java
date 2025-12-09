@@ -199,4 +199,5 @@ public class BaseController
     {
         return getLoginUser().getUsername();
     }
+    public Long getTenantId(){ return getLoginUser().getTenantId();}
 }

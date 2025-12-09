@@ -129,7 +129,7 @@ public class UserController extends BaseController
     @PostMapping("/add")
     public AjaxResult add(@Validated @RequestBody UserAdd userAdd)
     {
-        deptService.checkDeptDataScope(userAdd.getDeptId());
+//        deptService.checkDeptDataScope(userAdd.getDeptId());
         SysUser user=new SysUser();
         user.setEmail(userAdd.getEmail());
         user.setPassword(userAdd.getPassword());
@@ -138,8 +138,7 @@ public class UserController extends BaseController
         user.setUserName(userAdd.getUserName());
         user.setRoleId(userAdd.getRoleId());
         user.setRemark(userAdd.getRemark());
-        user.setTenantId(userAdd.getTenantId());
-        System.out.println(user);
+        user.setTenantId(getTenantId());
 
         if (!userService.checkUserNameUnique(user))
         {
@@ -163,13 +162,22 @@ public class UserController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:user:edit')")
     @Log(title = "用户管理", businessType = BusinessType.UPDATE)
-    @PutMapping
-    public AjaxResult edit(@Validated @RequestBody SysUser user)
+    @PutMapping("/update")
+    public AjaxResult edit(@Validated @RequestBody UserAdd userAdd)
     {
-        userService.checkUserAllowed(user);
-        userService.checkUserDataScope(user.getUserId());
-        deptService.checkDeptDataScope(user.getDeptId());
-        roleService.checkRoleDataScope(user.getRoleIds());
+//        userService.checkUserAllowed(user);
+//        userService.checkUserDataScope(user.getUserId());
+//        deptService.checkDeptDataScope(user.getDeptId());
+//        roleService.checkRoleDataScope(user.getRoleIds());
+        SysUser user=userService.selectUserById(userAdd.getUserId());
+        user.setEmail(userAdd.getEmail());
+        user.setPassword(userAdd.getPassword());
+        user.setDeptId(userAdd.getDeptId());
+        user.setNickName(userAdd.getNickName());
+        user.setUserName(userAdd.getUserName());
+        user.setRoleId(userAdd.getRoleId());
+        user.setRemark(userAdd.getRemark());
+        System.out.println(user);
         if (!userService.checkUserNameUnique(user))
         {
             return error("修改用户'" + user.getUserName() + "'失败，登录账号已存在");

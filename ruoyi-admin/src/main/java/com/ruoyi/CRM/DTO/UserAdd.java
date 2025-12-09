@@ -48,6 +48,4 @@ public class UserAdd {
     @ApiModelProperty(value = "备注", example = "新入职员工")
     @Size(max = 500, message = "备注长度不能超过500个字符")
     private String remark;
-    @ApiModelProperty(value = "租户id")
-    private Long tenantId;
 }
