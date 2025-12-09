@@ -4,8 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 
-import com.ruoyi.CRM.DTO.UserAdd;
-import com.ruoyi.CRM.domain.User;
+import com.ruoyi.CRM.DTO.UserDTO;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -127,17 +126,17 @@ public class UserController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:user:add')")
     @Log(title = "用户管理", businessType = BusinessType.INSERT)
     @PostMapping("/add")
-    public AjaxResult add(@Validated @RequestBody UserAdd userAdd)
+    public AjaxResult add(@Validated @RequestBody UserDTO userDTO)
     {
 //        deptService.checkDeptDataScope(userAdd.getDeptId());
         SysUser user=new SysUser();
-        user.setEmail(userAdd.getEmail());
-        user.setPassword(userAdd.getPassword());
-        user.setDeptId(userAdd.getDeptId());
-        user.setNickName(userAdd.getNickName());
-        user.setUserName(userAdd.getUserName());
-        user.setRoleId(userAdd.getRoleId());
-        user.setRemark(userAdd.getRemark());
+        user.setEmail(userDTO.getEmail());
+        user.setPassword(userDTO.getPassword());
+        user.setDeptId(userDTO.getDeptId());
+        user.setNickName(userDTO.getNickName());
+        user.setUserName(userDTO.getUserName());
+        user.setRoleId(userDTO.getRoleId());
+        user.setRemark(userDTO.getRemark());
         user.setTenantId(getTenantId());
 
         if (!userService.checkUserNameUnique(user))
@@ -163,21 +162,20 @@ public class UserController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:user:edit')")
     @Log(title = "用户管理", businessType = BusinessType.UPDATE)
     @PutMapping("/update")
-    public AjaxResult edit(@Validated @RequestBody UserAdd userAdd)
+    public AjaxResult edit(@Validated @RequestBody UserDTO userDTO)
     {
 //        userService.checkUserAllowed(user);
 //        userService.checkUserDataScope(user.getUserId());
 //        deptService.checkDeptDataScope(user.getDeptId());
 //        roleService.checkRoleDataScope(user.getRoleIds());
-        SysUser user=userService.selectUserById(userAdd.getUserId());
-        user.setEmail(userAdd.getEmail());
-        user.setPassword(SecurityUtils.encryptPassword(userAdd.getPassword()));
-        user.setDeptId(userAdd.getDeptId());
-        user.setNickName(userAdd.getNickName());
-        user.setUserName(userAdd.getUserName());
-        user.setRoleId(userAdd.getRoleId());
-        user.setRemark(userAdd.getRemark());
-        System.out.println(user);
+        SysUser user=userService.selectUserById(userDTO.getUserId());
+        user.setEmail(userDTO.getEmail());
+        user.setPassword(SecurityUtils.encryptPassword(userDTO.getPassword()));
+        user.setDeptId(userDTO.getDeptId());
+        user.setNickName(userDTO.getNickName());
+        user.setUserName(userDTO.getUserName());
+        user.setRoleId(userDTO.getRoleId());
+        user.setRemark(userDTO.getRemark());
         if (!userService.checkUserNameUnique(user))
         {
             return error("修改用户'" + user.getUserName() + "'失败，登录账号已存在");

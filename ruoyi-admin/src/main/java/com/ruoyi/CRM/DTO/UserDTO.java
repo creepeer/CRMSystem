@@ -6,7 +6,7 @@ import lombok.Data;
 import javax.validation.constraints.*;
 @Data
 @ApiModel("员工添加请求参数")
-public class UserAdd {
+public class UserDTO {
     @ApiModelProperty(value = "员工号", required = true)
     private Long userId;
 
