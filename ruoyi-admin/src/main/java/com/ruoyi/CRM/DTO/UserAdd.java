@@ -7,8 +7,7 @@ import javax.validation.constraints.*;
 @Data
 @ApiModel("员工添加请求参数")
 public class UserAdd {
-    @ApiModelProperty(value = "员工号", required = true, example = "EMP2025001")
-    @NotBlank(message = "员工号不能为空")
+    @ApiModelProperty(value = "员工号", required = true)
     private Long userId;
 
     @ApiModelProperty(value = "姓名", required = true, example = "张三")
@@ -17,12 +16,9 @@ public class UserAdd {
     private String nickName;
 
     @ApiModelProperty(value = "职位", required = true, example = "销售代表")
-    @NotBlank(message = "职位不能为空")
-    @Size(max = 50, message = "职位长度不能超过50个字符")
     private Long roleId;
 
     @ApiModelProperty(value = "团队ID", required = true, example = "1001")
-    @NotNull(message = "团队不能为空")
     private Long deptId;
 
     @ApiModelProperty(value = "年龄", example = "28")

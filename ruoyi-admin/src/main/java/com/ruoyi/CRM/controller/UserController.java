@@ -126,19 +126,21 @@ public class UserController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:user:add')")
     @Log(title = "用户管理", businessType = BusinessType.INSERT)
-    @PostMapping
+    @PostMapping("/add")
     public AjaxResult add(@Validated @RequestBody UserAdd userAdd)
     {
         deptService.checkDeptDataScope(userAdd.getDeptId());
         SysUser user=new SysUser();
-        user.setUserId(userAdd.getUserId());
         user.setEmail(userAdd.getEmail());
+        user.setPassword(userAdd.getPassword());
         user.setDeptId(userAdd.getDeptId());
         user.setNickName(userAdd.getNickName());
         user.setUserName(userAdd.getUserName());
         user.setRoleId(userAdd.getRoleId());
         user.setRemark(userAdd.getRemark());
         user.setTenantId(userAdd.getTenantId());
+        System.out.println(user);
+
         if (!userService.checkUserNameUnique(user))
         {
             return error("新增用户'" + user.getUserName() + "'失败，登录账号已存在");
