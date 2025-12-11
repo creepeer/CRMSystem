@@ -1,5 +1,6 @@
 package com.ruoyi.framework.web.service;
 
+import com.ruoyi.system.service.ISysRoleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.ruoyi.common.constant.CacheConstants;
@@ -30,6 +31,8 @@ public class SysRegisterService
     @Autowired
     private ISysUserService userService;
 
+
+
     @Autowired
     private ISysConfigService configService;
 
@@ -45,6 +48,7 @@ public class SysRegisterService
         SysUser sysUser = new SysUser();
         sysUser.setUserName(username);
         sysUser.setTenantId(registerBody.getCompanyId());
+        sysUser.setDeptId(registerBody.getCompanyId());
         // 验证码开关
         boolean captchaEnabled = configService.selectCaptchaEnabled();
         if (captchaEnabled)
@@ -79,6 +83,7 @@ public class SysRegisterService
             sysUser.setNickName(username);
             sysUser.setPwdUpdateDate(DateUtils.getNowDate());
             sysUser.setPassword(SecurityUtils.encryptPassword(password));
+            sysUser.setRoleIds(new Long[]{103L});
             boolean regFlag = userService.registerUser(sysUser);
             if (!regFlag)
             {

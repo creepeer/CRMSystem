@@ -33,7 +33,8 @@ public class SysDept extends BaseEntity
 
     /** 显示顺序 */
     private Integer orderNum;
-
+    /** 负责人Id */
+    private Long leaderId;
     /** 负责人 */
     private String leader;
 
@@ -54,8 +55,6 @@ public class SysDept extends BaseEntity
     
     /** 子部门 */
     private List<SysDept> children = new ArrayList<SysDept>();
-    /** 租户ID */
-    private String ancentId;
 
 
 
@@ -110,6 +109,14 @@ public class SysDept extends BaseEntity
     public void setOrderNum(Integer orderNum)
     {
         this.orderNum = orderNum;
+    }
+
+    public Long getLeaderId() {
+        return leaderId;
+    }
+
+    public void setLeaderId(Long leaderId) {
+        this.leaderId = leaderId;
     }
 
     public String getLeader()
@@ -202,13 +209,8 @@ public class SysDept extends BaseEntity
             .append("createTime", getCreateTime())
             .append("updateBy", getUpdateBy())
             .append("updateTime", getUpdateTime())
+            .append("tenantId",getTenantId())
             .toString();
-    }
-    public String getAncentId() {
-        return ancentId;
-    }
 
-    public void setAncentId(String ancentId) {
-        this.ancentId = ancentId;
     }
 }
