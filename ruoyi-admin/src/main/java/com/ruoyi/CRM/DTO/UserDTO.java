@@ -11,7 +11,6 @@ public class UserDTO {
     private Long userId;
 
     @ApiModelProperty(value = "姓名", required = true, example = "张三")
-    @NotBlank(message = "姓名不能为空")
     @Size(max = 50, message = "姓名长度不能超过50个字符")
     private String nickName;
 
@@ -26,15 +25,12 @@ public class UserDTO {
     private Integer age;
 
     @ApiModelProperty(value = "账号", required = true, example = "zhangsan")
-    @NotBlank(message = "账号不能为空")
     @Size(min = 4, max = 50, message = "账号长度必须在4-50个字符之间")
     @Pattern(regexp = "^[a-zA-Z][a-zA-Z0-9_]{3,49}$",
             message = "账号必须以字母开头，只能包含字母、数字和下划线")
     private String userName;
 
     @ApiModelProperty(value = "密码", required = true, example = "Password123")
-    @NotBlank(message = "密码不能为空")
-    @Size(min = 6, message = "密码长度必须在6-20个字符之间")
     private String password;
 
     @ApiModelProperty(value = "手机号", example = "13800138000")

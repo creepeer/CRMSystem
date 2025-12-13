@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.ruoyi.CRM.DTO.TeamDTO;
 import org.apache.commons.lang3.ArrayUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -44,6 +45,7 @@ public class TeamController extends BaseController
     public AjaxResult list(SysDept dept)
     {
         List<SysDept> depts = deptService.selectDeptList(dept);
+
         return success(depts);
     }
 
@@ -78,7 +80,6 @@ public class TeamController extends BaseController
     @PostMapping("/add")
     public AjaxResult add(@Validated @RequestBody TeamDTO teamDTO)
     {
-        System.out.println(teamDTO);
         getTenantId();
         SysDept dept=new SysDept();
         dept.setParentId(teamDTO.getParentId());
@@ -92,13 +93,12 @@ public class TeamController extends BaseController
         dept.setTenantId(getTenantId());
         dept.setStatus(teamDTO.getStatus());
         dept.setTenantId(getTenantId());
+        dept.setRemark(teamDTO.getRemark());
         if (!deptService.checkDeptNameUnique(dept))
         {
             return error("新增部门'" + dept.getDeptName() + "'失败，部门名称已存在");
         }
         dept.setCreateBy(getUsername());
-        System.out.println(dept);
-//        return toAjax(1);
         return toAjax(deptService.insertDept(dept));
     }
 
@@ -107,11 +107,12 @@ public class TeamController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:dept:edit')")
     @Log(title = "部门管理", businessType = BusinessType.UPDATE)
-    @PutMapping
-    public AjaxResult edit(@Validated @RequestBody SysDept dept)
+    @PutMapping("/update")
+    public AjaxResult edit(@Validated @RequestBody TeamDTO teamDTO)
     {
-        Long deptId = dept.getDeptId();
+        Long deptId = teamDTO.getDeptId();
         deptService.checkDeptDataScope(deptId);
+        SysDept dept=deptService.selectDeptById(deptId);
         if (!deptService.checkDeptNameUnique(dept))
         {
             return error("修改部门'" + dept.getDeptName() + "'失败，部门名称已存在");
@@ -125,6 +126,7 @@ public class TeamController extends BaseController
             return error("该部门包含未停用的子部门！");
         }
         dept.setUpdateBy(getUsername());
+        BeanUtils.copyProperties(teamDTO, dept);
         return toAjax(deptService.updateDept(dept));
     }
 

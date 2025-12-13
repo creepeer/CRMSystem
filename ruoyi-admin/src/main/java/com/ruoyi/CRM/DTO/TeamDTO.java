@@ -5,6 +5,7 @@ import javax.validation.constraints.*;
 @Data
 public class TeamDTO {
 
+    private Long deptId;
     /**
      * 上级部门ID
      */
@@ -22,6 +23,10 @@ public class TeamDTO {
     @NotNull(message = "排序值不能为空")
     @Min(value = 0, message = "排序值不能小于0")
     private Integer orderNum;
+    /**
+     * 显示排序
+     */
+    private String remark;
 
     /**
      * 负责人

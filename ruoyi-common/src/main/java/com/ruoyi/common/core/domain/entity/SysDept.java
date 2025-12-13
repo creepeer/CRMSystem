@@ -43,7 +43,8 @@ public class SysDept extends BaseEntity
 
     /** 邮箱 */
     private String email;
-
+    /** 团队备注 */
+    private String remark;
     /** 部门状态:0正常,1停用 */
     private String status;
 
@@ -52,7 +53,7 @@ public class SysDept extends BaseEntity
 
     /** 父部门名称 */
     private String parentName;
-    
+
     /** 子部门 */
     private List<SysDept> children = new ArrayList<SysDept>();
 
@@ -152,6 +153,16 @@ public class SysDept extends BaseEntity
         this.email = email;
     }
 
+    @Override
+    public String getRemark() {
+        return remark;
+    }
+
+    @Override
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
     public String getStatus()
     {
         return status;
@@ -203,6 +214,7 @@ public class SysDept extends BaseEntity
             .append("leader", getLeader())
             .append("phone", getPhone())
             .append("email", getEmail())
+            .append("remark", getRemark())
             .append("status", getStatus())
             .append("delFlag", getDelFlag())
             .append("createBy", getCreateBy())
