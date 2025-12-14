@@ -30,7 +30,7 @@ public class UserDTO {
             message = "账号必须以字母开头，只能包含字母、数字和下划线")
     private String userName;
 
-    @ApiModelProperty(value = "密码", required = true, example = "Password123")
+    @ApiModelProperty(value = "密码", example = "Password123")
     private String password;
 
     @ApiModelProperty(value = "手机号", example = "13800138000")

@@ -170,7 +170,9 @@ public class UserController extends BaseController
 //        roleService.checkRoleDataScope(user.getRoleIds());
         SysUser user=userService.selectUserById(userDTO.getUserId());
         user.setEmail(userDTO.getEmail());
-        user.setPassword(SecurityUtils.encryptPassword(userDTO.getPassword()));
+        if(userDTO.getPassword()!=null) {
+            user.setPassword(SecurityUtils.encryptPassword(userDTO.getPassword()));
+        }
         user.setDeptId(userDTO.getDeptId());
         user.setNickName(userDTO.getNickName());
         user.setUserName(userDTO.getUserName());
