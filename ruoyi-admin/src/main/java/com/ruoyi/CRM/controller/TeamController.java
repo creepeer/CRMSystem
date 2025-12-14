@@ -3,6 +3,7 @@ package com.ruoyi.CRM.controller;
 import java.util.List;
 
 import com.ruoyi.CRM.DTO.TeamDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,7 @@ import com.ruoyi.system.service.ISysDeptService;
  */
 @RestController
 @RequestMapping("/company/teams")
+@Slf4j
 public class TeamController extends BaseController
 {
     @Autowired
@@ -82,18 +84,9 @@ public class TeamController extends BaseController
     {
         getTenantId();
         SysDept dept=new SysDept();
-        dept.setParentId(teamDTO.getParentId());
-        dept.setDeptName(teamDTO.getDeptName());
-        dept.setEmail(teamDTO.getEmail());
-        dept.setLeader(teamDTO.getLeader());
-        dept.setLeaderId(teamDTO.getUserId());
-        dept.setAncestors(teamDTO.getAncestors());
-        dept.setOrderNum(teamDTO.getOrderNum());
-        dept.setPhone(teamDTO.getPhone());
+        BeanUtils.copyProperties(teamDTO,dept);
         dept.setTenantId(getTenantId());
-        dept.setStatus(teamDTO.getStatus());
-        dept.setTenantId(getTenantId());
-        dept.setRemark(teamDTO.getRemark());
+        log.info("BeanUtils1:{}",dept);
         if (!deptService.checkDeptNameUnique(dept))
         {
             return error("新增部门'" + dept.getDeptName() + "'失败，部门名称已存在");

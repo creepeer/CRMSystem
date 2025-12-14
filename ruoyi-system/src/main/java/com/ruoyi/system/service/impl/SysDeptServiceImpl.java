@@ -215,8 +215,12 @@ public class SysDeptServiceImpl implements ISysDeptService
     @Override
     public int insertDept(SysDept dept)
     {
+        if(dept.getParentId()==0){
+            dept.setAncestors("0");
+            System.out.println("insdept111"+dept);
+            return deptMapper.insertDept(dept);
+        }
         SysDept info = deptMapper.selectDeptById(dept.getParentId());
-        System.out.println("info:"+info);
         dept.setParentName(info.getDeptName());
         // 如果父节点不为正常状态,则不允许新增子节点
         if (!UserConstants.DEPT_NORMAL.equals(info.getStatus()))
@@ -224,7 +228,7 @@ public class SysDeptServiceImpl implements ISysDeptService
             throw new ServiceException("部门停用，不允许新增");
         }
         dept.setAncestors(info.getAncestors() + "," + dept.getParentId());
-        System.out.println(dept);
+        System.out.println("insdept"+dept);
         return deptMapper.insertDept(dept);
     }
 
