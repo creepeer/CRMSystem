@@ -1,7 +1,10 @@
 package com.ruoyi.CRM.service.impl;
 
 import java.util.List;
+
+import com.ruoyi.CRM.DTO.ManageDTO;
 import com.ruoyi.common.utils.DateUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.CRM.mapper.NCompanyMapper;
@@ -47,13 +50,16 @@ public class NCompanyServiceImpl implements INCompanyService
     /**
      * 新增企业信息
      * 
-     * @param nCompany 企业信息
+     * @param manageDTO 企业信息
      * @return 结果
      */
     @Override
-    public int insertNCompany(NCompany nCompany)
+    public int insertNCompany(ManageDTO manageDTO)
     {
+        NCompany nCompany=new NCompany();
+        BeanUtils.copyProperties(manageDTO,nCompany);
         nCompany.setCreateTime(DateUtils.getNowDate());
+        nCompany.setTenantId(1L);
         return nCompanyMapper.insertNCompany(nCompany);
     }
 

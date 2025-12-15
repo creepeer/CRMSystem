@@ -2,6 +2,8 @@ package com.ruoyi.CRM.controller;
 
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.CRM.DTO.ManageDTO;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +30,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
  * @date 2025-11-26
  */
 @RestController
-@RequestMapping("/company")
+@RequestMapping("/company/manage")
 public class NCompanyController extends BaseController
 {
     @Autowired
@@ -74,10 +76,10 @@ public class NCompanyController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('company:add')")
     @Log(title = "企业信息", businessType = BusinessType.INSERT)
-    @PostMapping
-    public AjaxResult add(@RequestBody NCompany nCompany)
+    @PostMapping("/add")
+    public AjaxResult add(@RequestBody ManageDTO manageDTO)
     {
-        return toAjax(nCompanyService.insertNCompany(nCompany));
+        return toAjax(nCompanyService.insertNCompany(manageDTO));
     }
 
     /**

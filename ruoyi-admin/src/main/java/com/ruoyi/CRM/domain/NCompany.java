@@ -28,27 +28,27 @@ public class NCompany extends BaseEntity
 
     /** 营业执照 */
     @Excel(name = "营业执照")
-    private String cplicense;
+    private String license;
 
     /** 法人姓名 */
     @Excel(name = "法人姓名")
-    private String lename;
+    private String leName;
 
     /** 法人年龄 */
     @Excel(name = "法人年龄")
-    private Long leage;
+    private Long leAge;
 
     /** 法人邮箱 */
     @Excel(name = "法人邮箱")
-    private String leemail;
+    private String leEmail;
 
     /** 法人电话 */
     @Excel(name = "法人电话")
-    private String lephone;
+    private String lePhone;
 
     /** 法人身份证号 */
     @Excel(name = "法人身份证号")
-    private String lecard;
+    private String leCard;
 
     /** 企业状态：1-待审核 2-已通过 3-已拒绝 4-停用 */
     @Excel(name = "企业状态：1-待审核 2-已通过 3-已拒绝 4-停用")
@@ -88,64 +88,52 @@ public class NCompany extends BaseEntity
         return address;
     }
 
-    public void setCplicense(String cplicense) 
-    {
-        this.cplicense = cplicense;
+    public String getLicense() {
+        return license;
     }
 
-    public String getCplicense() 
-    {
-        return cplicense;
+    public void setLicense(String license) {
+        this.license = license;
     }
 
-    public void setLename(String lename) 
-    {
-        this.lename = lename;
+    public String getLeName() {
+        return leName;
     }
 
-    public String getLename() 
-    {
-        return lename;
+    public void setLeName(String leName) {
+        this.leName = leName;
     }
 
-    public void setLeage(Long leage) 
-    {
-        this.leage = leage;
+    public Long getLeAge() {
+        return leAge;
     }
 
-    public Long getLeage() 
-    {
-        return leage;
+    public void setLeAge(Long leAge) {
+        this.leAge = leAge;
     }
 
-    public void setLeemail(String leemail) 
-    {
-        this.leemail = leemail;
+    public String getLeEmail() {
+        return leEmail;
     }
 
-    public String getLeemail() 
-    {
-        return leemail;
+    public void setLeEmail(String leEmail) {
+        this.leEmail = leEmail;
     }
 
-    public void setLephone(String lephone) 
-    {
-        this.lephone = lephone;
+    public String getLePhone() {
+        return lePhone;
     }
 
-    public String getLephone() 
-    {
-        return lephone;
+    public void setLePhone(String lePhone) {
+        this.lePhone = lePhone;
     }
 
-    public void setLecard(String lecard) 
-    {
-        this.lecard = lecard;
+    public String getLeCard() {
+        return leCard;
     }
 
-    public String getLecard() 
-    {
-        return lecard;
+    public void setLeCard(String leCard) {
+        this.leCard = leCard;
     }
 
     public void setState(int state)
@@ -174,12 +162,12 @@ public class NCompany extends BaseEntity
             .append("id", getId())
             .append("name", getName())
             .append("address", getAddress())
-            .append("cplicense", getCplicense())
-            .append("lename", getLename())
-            .append("leage", getLeage())
-            .append("leemail", getLeemail())
-            .append("lephone", getLephone())
-            .append("lecard", getLecard())
+            .append("license", getLicense())
+            .append("Name", getLeName())
+            .append("leAge", getLeAge())
+            .append("leEmail", getLeEmail())
+            .append("lePhone", getLePhone())
+            .append("leCard", getLeCard())
             .append("state", getState())
             .append("remark", getRemark())
             .append("createBy", getCreateBy())

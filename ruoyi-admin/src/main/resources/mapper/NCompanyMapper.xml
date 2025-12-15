@@ -8,12 +8,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="id"    column="id"    />
         <result property="name"    column="name"    />
         <result property="address"    column="address"    />
-        <result property="cplicense"    column="cplicense"    />
-        <result property="lename"    column="lename"    />
-        <result property="leage"    column="leage"    />
-        <result property="leemail"    column="leemail"    />
-        <result property="lephone"    column="lephone"    />
-        <result property="lecard"    column="lecard"    />
+        <result property="license"    column="cplicense"    />
+        <result property="leName"    column="lename"    />
+        <result property="leAge"    column="leage"    />
+        <result property="leEmail"    column="leemail"    />
+        <result property="lePhone"    column="lephone"    />
+        <result property="leCard"    column="lecard"    />
         <result property="state"    column="state"    />
         <result property="remark"    column="remark"    />
         <result property="createBy"    column="create_by"    />
@@ -53,12 +53,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="name != null">name,</if>
             <if test="address != null">address,</if>
-            <if test="cplicense != null">cplicense,</if>
-            <if test="lename != null">lename,</if>
-            <if test="leage != null">leage,</if>
-            <if test="leemail != null">leemail,</if>
-            <if test="lephone != null">lephone,</if>
-            <if test="lecard != null">lecard,</if>
+            <if test="license != null">cplicense,</if>
+            <if test="leName != null">leName,</if>
+            <if test="leAge != null">leAge,</if>
+            <if test="leEmail != null">leEmail,</if>
+            <if test="lePhone != null">lePhone,</if>
+            <if test="leCard != null">leCard,</if>
             <if test="state != null">state,</if>
             <if test="remark != null">remark,</if>
             <if test="createBy != null">create_by,</if>
@@ -66,16 +66,17 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateBy != null">update_by,</if>
             <if test="updateTime != null">update_time,</if>
             <if test="isDeleted != null">is_deleted,</if>
+            <if test="tenantId != null">tenant_id,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="name != null">#{name},</if>
             <if test="address != null">#{address},</if>
-            <if test="cplicense != null">#{cplicense},</if>
-            <if test="lename != null">#{lename},</if>
-            <if test="leage != null">#{leage},</if>
-            <if test="leemail != null">#{leemail},</if>
-            <if test="lephone != null">#{lephone},</if>
-            <if test="lecard != null">#{lecard},</if>
+            <if test="license != null">#{license},</if>
+            <if test="leName != null">#{leName},</if>
+            <if test="leAge != null">#{leAge},</if>
+            <if test="leEmail != null">#{leEmail},</if>
+            <if test="lePhone != null">#{lePhone},</if>
+            <if test="leCard != null">#{leCard},</if>
             <if test="state != null">#{state},</if>
             <if test="remark != null">#{remark},</if>
             <if test="createBy != null">#{createBy},</if>
@@ -83,6 +84,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateBy != null">#{updateBy},</if>
             <if test="updateTime != null">#{updateTime},</if>
             <if test="isDeleted != null">#{isDeleted},</if>
+            <if test="tenantId != null">#{tenantId}</if>
          </trim>
     </insert>
 
