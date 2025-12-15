@@ -56,7 +56,7 @@ public class SysRegisterService
         nCompanyService.insertNCompany(nCompany);
 
         Long deptId=nCompany.getId();
-        sysUser.setUserName(registerBody.getLeName());
+        sysUser.setUserName(username);
         sysUser.setTenantId(deptId);
         sysUser.setDeptId(deptId);
         // 验证码开关
