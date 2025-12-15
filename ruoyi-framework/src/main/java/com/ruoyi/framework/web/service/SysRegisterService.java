@@ -1,6 +1,8 @@
 package com.ruoyi.framework.web.service;
 
 import com.ruoyi.system.service.ISysRoleService;
+import com.ruoyi.system.service.impl.NCompanyServiceImpl;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import com.ruoyi.common.constant.CacheConstants;
@@ -19,6 +21,7 @@ import com.ruoyi.framework.manager.AsyncManager;
 import com.ruoyi.framework.manager.factory.AsyncFactory;
 import com.ruoyi.system.service.ISysConfigService;
 import com.ruoyi.system.service.ISysUserService;
+import com.ruoyi.system.domain.NCompany;
 
 /**
  * 注册校验方法
@@ -31,7 +34,8 @@ public class SysRegisterService
     @Autowired
     private ISysUserService userService;
 
-
+    @Autowired
+    private NCompanyServiceImpl nCompanyService;
 
     @Autowired
     private ISysConfigService configService;
@@ -46,9 +50,15 @@ public class SysRegisterService
     {
         String msg = "", username = registerBody.getUsername(), password = registerBody.getPassword();
         SysUser sysUser = new SysUser();
-        sysUser.setUserName(username);
-        sysUser.setTenantId(registerBody.getCompanyId());
-        sysUser.setDeptId(registerBody.getCompanyId());
+        NCompany nCompany=new NCompany();
+        BeanUtils.copyProperties(registerBody,nCompany);
+        nCompany.setTenantId(1L);
+        nCompanyService.insertNCompany(nCompany);
+
+        Long deptId=nCompany.getId();
+        sysUser.setUserName(registerBody.getLeName());
+        sysUser.setTenantId(deptId);
+        sysUser.setDeptId(deptId);
         // 验证码开关
         boolean captchaEnabled = configService.selectCaptchaEnabled();
         if (captchaEnabled)
@@ -80,10 +90,13 @@ public class SysRegisterService
         }
         else
         {
-            sysUser.setNickName(username);
+            sysUser.setNickName(registerBody.getLeName());
             sysUser.setPwdUpdateDate(DateUtils.getNowDate());
             sysUser.setPassword(SecurityUtils.encryptPassword(password));
             sysUser.setRoleIds(new Long[]{103L});
+            sysUser.setStatus("1");
+            sysUser.setEmail(registerBody.getLeEmail());
+
             boolean regFlag = userService.registerUser(sysUser);
             if (!regFlag)
             {

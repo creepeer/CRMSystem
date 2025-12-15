@@ -1,7 +1,8 @@
-package com.ruoyi.CRM.mapper;
+package com.ruoyi.system.mapper;
+
+import com.ruoyi.system.domain.NCompany;
 
 import java.util.List;
-import com.ruoyi.CRM.domain.NCompany;
 
 /**
  * 企业信息Mapper接口

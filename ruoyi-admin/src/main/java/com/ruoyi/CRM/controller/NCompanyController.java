@@ -3,7 +3,7 @@ package com.ruoyi.CRM.controller;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
-import com.ruoyi.CRM.DTO.ManageDTO;
+import com.ruoyi.system.service.INCompanyService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +18,7 @@ import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.enums.BusinessType;
-import com.ruoyi.CRM.domain.NCompany;
-import com.ruoyi.CRM.service.INCompanyService;
+import com.ruoyi.system.domain.NCompany;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
 
@@ -77,9 +76,9 @@ public class NCompanyController extends BaseController
     @PreAuthorize("@ss.hasPermi('company:add')")
     @Log(title = "企业信息", businessType = BusinessType.INSERT)
     @PostMapping("/add")
-    public AjaxResult add(@RequestBody ManageDTO manageDTO)
+    public AjaxResult add(@RequestBody NCompany nCompany)
     {
-        return toAjax(nCompanyService.insertNCompany(manageDTO));
+        return toAjax(nCompanyService.insertNCompany(nCompany));
     }
 
     /**

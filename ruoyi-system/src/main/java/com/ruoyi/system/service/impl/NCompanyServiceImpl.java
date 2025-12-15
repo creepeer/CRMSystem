@@ -1,15 +1,16 @@
-package com.ruoyi.CRM.service.impl;
+package com.ruoyi.system.service.impl;
 
-import java.util.List;
 
-import com.ruoyi.CRM.DTO.ManageDTO;
+
+import com.ruoyi.system.domain.NCompany;
 import com.ruoyi.common.utils.DateUtils;
-import org.springframework.beans.BeanUtils;
+import com.ruoyi.system.mapper.NCompanyMapper;
+import com.ruoyi.system.mapper.SysUserMapper;
+import com.ruoyi.system.service.INCompanyService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.CRM.mapper.NCompanyMapper;
-import com.ruoyi.CRM.domain.NCompany;
-import com.ruoyi.CRM.service.INCompanyService;
+
+import java.util.List;
 
 /**
  * 企业信息Service业务层处理
@@ -18,10 +19,12 @@ import com.ruoyi.CRM.service.INCompanyService;
  * @date 2025-11-26
  */
 @Service
-public class NCompanyServiceImpl implements INCompanyService 
+public class NCompanyServiceImpl implements INCompanyService
 {
     @Autowired
     private NCompanyMapper nCompanyMapper;
+    @Autowired
+    private SysUserMapper userMapper;
 
     /**
      * 查询企业信息
@@ -50,16 +53,12 @@ public class NCompanyServiceImpl implements INCompanyService
     /**
      * 新增企业信息
      * 
-     * @param manageDTO 企业信息
+     * @param nCompany 企业信息
      * @return 结果
      */
     @Override
-    public int insertNCompany(ManageDTO manageDTO)
+    public int insertNCompany(NCompany nCompany)
     {
-        NCompany nCompany=new NCompany();
-        BeanUtils.copyProperties(manageDTO,nCompany);
-        nCompany.setCreateTime(DateUtils.getNowDate());
-        nCompany.setTenantId(1L);
         return nCompanyMapper.insertNCompany(nCompany);
     }
 

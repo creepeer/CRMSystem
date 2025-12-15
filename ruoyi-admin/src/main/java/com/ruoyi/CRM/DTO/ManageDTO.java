@@ -22,7 +22,7 @@ public class ManageDTO {
     private String leName;
 
     @ApiModelProperty(value = "法人姓名",example = "张三")
-    private Long leAge;
+    private int leAge;
 
     @ApiModelProperty(value = "法人邮箱",example = "1987@qq.com")
     private String leEmail;
@@ -35,6 +35,10 @@ public class ManageDTO {
     private String leCard;
 
     private int status;
+
+    private String username;
+
+    private String password;
 
     @ApiModelProperty(value = "备注", example = "公司备注")
     @Size(max = 500, message = "备注长度不能超过500个字符")

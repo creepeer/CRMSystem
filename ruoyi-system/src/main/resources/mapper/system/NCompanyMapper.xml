@@ -2,7 +2,7 @@
 <!DOCTYPE mapper
 PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.ruoyi.CRM.mapper.NCompanyMapper">
+<mapper namespace="com.ruoyi.system.mapper.NCompanyMapper">
     
     <resultMap type="NCompany" id="NCompanyResult">
         <result property="id"    column="id"    />
@@ -21,6 +21,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateBy"    column="update_by"    />
         <result property="updateTime"    column="update_time"    />
         <result property="isDeleted"    column="is_deleted"    />
+        <result property="tenantId" column="tenant_id"/>
     </resultMap>
 
     <sql id="selectNCompanyVo">

@@ -1,9 +1,8 @@
-package com.ruoyi.CRM.service;
+package com.ruoyi.system.service;
+
+import com.ruoyi.system.domain.NCompany;
 
 import java.util.List;
-
-import com.ruoyi.CRM.DTO.ManageDTO;
-import com.ruoyi.CRM.domain.NCompany;
 
 /**
  * 企业信息Service接口
@@ -32,10 +31,10 @@ public interface INCompanyService
     /**
      * 新增企业信息
      * 
-     * @param manageDTO 企业信息
+     * @param nCompany 企业信息
      * @return 结果
      */
-    public int insertNCompany(ManageDTO manageDTO);
+    public int insertNCompany(NCompany nCompany);
 
     /**
      * 修改企业信息

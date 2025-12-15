@@ -1,4 +1,4 @@
-package com.ruoyi.CRM.domain;
+package com.ruoyi.system.domain;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -7,7 +7,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
  * 企业信息对象 n_company
- * 
+ *
  * @author ruoyi
  * @date 2025-11-26
  */
@@ -36,7 +36,7 @@ public class NCompany extends BaseEntity
 
     /** 法人年龄 */
     @Excel(name = "法人年龄")
-    private Long leAge;
+    private int leAge;
 
     /** 法人邮箱 */
     @Excel(name = "法人邮箱")
@@ -58,32 +58,32 @@ public class NCompany extends BaseEntity
     @Excel(name = "删除标记：0-正常 1-删除")
     private Integer isDeleted;
 
-    public void setId(Long id) 
+    public void setId(Long id)
     {
         this.id = id;
     }
 
-    public Long getId() 
+    public Long getId()
     {
         return id;
     }
 
-    public void setName(String name) 
+    public void setName(String name)
     {
         this.name = name;
     }
 
-    public String getName() 
+    public String getName()
     {
         return name;
     }
 
-    public void setAddress(String address) 
+    public void setAddress(String address)
     {
         this.address = address;
     }
 
-    public String getAddress() 
+    public String getAddress()
     {
         return address;
     }
@@ -104,11 +104,11 @@ public class NCompany extends BaseEntity
         this.leName = leName;
     }
 
-    public Long getLeAge() {
+    public int getLeAge() {
         return leAge;
     }
 
-    public void setLeAge(Long leAge) {
+    public void setLeAge(int leAge) {
         this.leAge = leAge;
     }
 
@@ -146,12 +146,12 @@ public class NCompany extends BaseEntity
         return state;
     }
 
-    public void setIsDeleted(Integer isDeleted) 
+    public void setIsDeleted(Integer isDeleted)
     {
         this.isDeleted = isDeleted;
     }
 
-    public Integer getIsDeleted() 
+    public Integer getIsDeleted()
     {
         return isDeleted;
     }
@@ -159,22 +159,22 @@ public class NCompany extends BaseEntity
     @Override
     public String toString() {
         return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-            .append("id", getId())
-            .append("name", getName())
-            .append("address", getAddress())
-            .append("license", getLicense())
-            .append("Name", getLeName())
-            .append("leAge", getLeAge())
-            .append("leEmail", getLeEmail())
-            .append("lePhone", getLePhone())
-            .append("leCard", getLeCard())
-            .append("state", getState())
-            .append("remark", getRemark())
-            .append("createBy", getCreateBy())
-            .append("createTime", getCreateTime())
-            .append("updateBy", getUpdateBy())
-            .append("updateTime", getUpdateTime())
-            .append("isDeleted", getIsDeleted())
-            .toString();
+                .append("id", getId())
+                .append("name", getName())
+                .append("address", getAddress())
+                .append("license", getLicense())
+                .append("Name", getLeName())
+                .append("leAge", getLeAge())
+                .append("leEmail", getLeEmail())
+                .append("lePhone", getLePhone())
+                .append("leCard", getLeCard())
+                .append("state", getState())
+                .append("remark", getRemark())
+                .append("createBy", getCreateBy())
+                .append("createTime", getCreateTime())
+                .append("updateBy", getUpdateBy())
+                .append("updateTime", getUpdateTime())
+                .append("isDeleted", getIsDeleted())
+                .toString();
     }
 }
