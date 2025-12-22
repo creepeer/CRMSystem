@@ -100,9 +100,12 @@ public class NCustomerController extends BaseController
     @PreAuthorize("@ss.hasPermi('customer:edit')")
     @Log(title = "【客户更新】", businessType = BusinessType.UPDATE)
     @PutMapping("/update")
-    public AjaxResult edit(@RequestBody NCustomer nCustomer)
+    public AjaxResult edit(@RequestBody CustomerDTO customerDTO)
     {
-        return toAjax(nCustomerService.updateNCustomer(nCustomer));
+        NCustomer customer=new NCustomer();
+        BeanUtils.copyProperties(customerDTO,customer);
+//        return toAjax(1);
+        return toAjax(nCustomerService.updateNCustomer(customer));
     }
 
     /**
