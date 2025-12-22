@@ -414,75 +414,87 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- 详情弹窗：显示备注 + 负责人信息 -->
-  <div v-if="detailVisible" class="modal-overlay" @click="closeDetail">
-    <div class="modal-content detail-modal" @click.stop>
-      <div class="modal-header">
-        <h3>
-          <i class="fas fa-info-circle"></i>
-          部门详情
-        </h3>
-        <button class="close-btn" @click="closeDetail">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-
-      <div class="modal-body">
-        <div v-if="detailLoading" class="loading-state" style="padding: 2rem;">
-          <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-          </div>
-          <p>正在加载详情...</p>
+    <!-- ✅ FIX 1：把“详情弹窗”从 app-container 外面移进来，保证 template 单根 -->
+    <!-- 详情弹窗：显示备注 + 负责人信息 -->
+    <div v-if="detailVisible" class="modal-overlay" @click="closeDetail">
+      <div class="modal-content detail-modal" @click.stop>
+        <div class="modal-header">
+          <h3>
+            <i class="fas fa-info-circle"></i>
+            部门详情
+          </h3>
+          <button class="close-btn" @click="closeDetail">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
 
-        <div v-else class="detail-body">
-          <div class="detail-grid">
-            <div class="detail-item">
-              <div class="detail-label">名称</div>
-              <div class="detail-value">{{ detailDeptName || "-" }}</div>
+        <div class="modal-body">
+          <div v-if="detailLoading" class="loading-state" style="padding: 2rem;">
+            <div class="loading-spinner">
+              <i class="fas fa-spinner fa-spin"></i>
             </div>
-
-            <div class="detail-item">
-              <div class="detail-label">负责人</div>
-              <div class="detail-value">
-                {{ detailLeader || "（未设置）" }}
-                <span v-if="detailLeaderId" class="detail-sub">ID: {{ detailLeaderId }}</span>
-              </div>
-            </div>
-
-            <div class="detail-item">
-              <div class="detail-label">电话</div>
-              <div class="detail-value">{{ detailPhone || "-" }}</div>
-            </div>
-
-            <div class="detail-item">
-              <div class="detail-label">邮箱</div>
-              <div class="detail-value detail-email" :title="detailEmail || ''">
-                {{ detailEmail || "-" }}
-              </div>
-            </div>
-
-            <div class="detail-item detail-span-2">
-              <div class="detail-label">备注</div>
-              <div class="detail-value detail-remark">
-                {{ detailRemark && detailRemark.trim() ? detailRemark : "（无备注）" }}
-              </div>
-            </div>
+            <p>正在加载详情...</p>
           </div>
 
-          <div class="form-actions" style="margin-top: 1.5rem;">
-            <button type="button" class="btn btn-primary" @click="closeDetail">确认</button>
+          <div v-else class="detail-body">
+            <div class="detail-grid">
+              <div class="detail-item">
+                <div class="detail-label">名称</div>
+                <div class="detail-value">{{ detailDeptName || "-" }}</div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-label">负责人</div>
+                <div class="detail-value">
+                  {{ detailLeader || "（未设置）" }}
+                  <span v-if="detailLeaderId" class="detail-sub">ID: {{ detailLeaderId }}</span>
+                </div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-label">电话</div>
+                <div class="detail-value">{{ detailPhone || "-" }}</div>
+              </div>
+
+              <div class="detail-item">
+                <div class="detail-label">邮箱</div>
+                <div class="detail-value detail-email" :title="detailEmail || ''">
+                  {{ detailEmail || "-" }}
+                </div>
+              </div>
+
+              <div class="detail-item detail-span-2">
+                <div class="detail-label">备注</div>
+                <div class="detail-value detail-remark">
+                  {{ detailRemark && detailRemark.trim() ? detailRemark : "（无备注）" }}
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions" style="margin-top: 1.5rem;">
+              <button type="button" class="btn btn-primary" @click="closeDetail">确认</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
+    <!-- ✅ /FIX 1 -->
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, toRefs, computed, nextTick, getCurrentInstance, onMounted } from "vue";
+import {
+  ref,
+  reactive,
+  toRefs,
+  computed,
+  nextTick,
+  getCurrentInstance,
+  onMounted,
+  onActivated,
+  onDeactivated,
+} from "vue";
 import request from "@/utils/request";
 import useUserStore from "@/store/modules/user";
 
@@ -581,7 +593,7 @@ const showTreeSelect = ref(false);
 const treeSearch = ref("");
 
 const showDeleteConfirm = ref(false);
-const deleteIds = ref(null);       // 注意：改成 ids（不是 userId）
+const deleteIds = ref(null); // 注意：改成 ids（不是 userId）
 const deleteDeptName = ref("");
 
 const data = reactive({
@@ -709,6 +721,15 @@ async function getList() {
     loading.value = false;
   }
 }
+
+/* ✅ FIX 2：避免切走/切回时 refreshTable 卡死为 false 导致“空白” */
+onActivated(() => {
+  if (!refreshTable.value) refreshTable.value = true;
+});
+onDeactivated(() => {
+  if (!refreshTable.value) refreshTable.value = true;
+});
+/* ✅ /FIX 2 */
 
 /* ---------------- 辅助：状态/时间 ---------------- */
 function getStatusText(status) {
@@ -1027,7 +1048,7 @@ function handleDelete(row) {
     alert("删除失败：该记录缺少 deptId/id/teamId，无法调用 /company/teams/{ids} 删除接口");
     return;
   }
-  deleteIds.value = id;                 // 单删直接存一个 id
+  deleteIds.value = id; // 单删直接存一个 id
   deleteDeptName.value = row?.deptName || "";
   showDeleteConfirm.value = true;
 }
@@ -1039,7 +1060,7 @@ async function confirmDelete() {
   }
 
   try {
-    await apiTeamsDelete(deleteIds.value);   // DELETE /company/teams/{ids}
+    await apiTeamsDelete(deleteIds.value); // DELETE /company/teams/{ids}
     alert("删除成功！");
     showDeleteConfirm.value = false;
     deleteIds.value = null;
@@ -1119,7 +1140,6 @@ onMounted(async () => {
   await ensureLeaderOptions();
 });
 </script>
-
 
 <style scoped>
 /* 复用基础样式 */

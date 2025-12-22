@@ -82,18 +82,20 @@
               <input type="text" v-model="deptFilter" placeholder="输入部门名称搜索..." class="sidebar-input"
                 @input="filterDeptTree">
             </div>
+
             <div class="dept-tree-container">
               <div v-if="loading" class="loading-state">
                 <i class="fas fa-spinner fa-spin"></i>
                 <p>加载中...</p>
               </div>
+
               <div v-else-if="filteredDeptTree.length === 0" class="empty-tree">
                 <i class="fas fa-search"></i>
                 <p>未找到匹配的部门</p>
               </div>
+
               <div v-else class="dept-tree">
                 <div v-for="dept in filteredDeptTree" :key="dept.deptId" class="dept-tree-item">
-                  <!-- 顶级部门 -->
                   <div class="dept-item">
                     <div class="dept-item-main" :class="{ active: queryParams.deptId === dept.deptId }"
                       @click="handleDeptSelect(dept)">
@@ -105,6 +107,7 @@
                         <div v-else class="dept-icon">
                           <i class="fas fa-minus"></i>
                         </div>
+
                         <div class="dept-info">
                           <div class="dept-name">
                             {{ dept.label }}
@@ -132,6 +135,7 @@
                             <div v-else class="dept-icon">
                               <i class="fas fa-minus"></i>
                             </div>
+
                             <div class="dept-info">
                               <div class="dept-name">
                                 {{ child.label }}
@@ -165,17 +169,19 @@
                           </div>
                         </div>
                       </div>
+
                     </div>
                   </div>
+
                 </div>
               </div>
             </div>
+
           </div>
         </div>
 
         <!-- 右侧员工表格 -->
         <div class="content-main">
-          <!-- 表格工具栏 -->
           <div class="table-header">
             <div class="table-info">
               <span class="info-text">
@@ -188,7 +194,6 @@
             </div>
           </div>
 
-          <!-- 员工表格 -->
           <div class="table-card">
             <div v-if="loading" class="loading-state">
               <div class="loading-spinner">
@@ -210,59 +215,180 @@
               <table class="data-table">
                 <thead>
                   <tr>
-                    <th>员工号</th>
+                    <th style="width: 110px;">员工号</th>
                     <th>姓名</th>
                     <th>部门</th>
                     <th>年龄</th>
                     <th>职位</th>
-                    <th>操作</th>
+                    <th style="width: 210px;">操作</th>
                   </tr>
                 </thead>
-                <!-- 在表格中添加调试信息 -->
+
                 <tbody>
-                  <tr v-for="staff in tableData" :key="staff.userId">
-                    <td>
-                      <div class="staff-id">{{ staff.userId }}</div>
-                    </td>
-                    <td>
-                      <div class="staff-info">
-                        <div class="staff-avatar">
-                          {{ getAvatarText(staff.nickName) }}
+                  <!-- 关键：员工行 + 展开行 -->
+                  <template v-for="staff in tableData" :key="staff.userId">
+                    <!-- 员工行：点击展开客户树（把 userId 传后端） -->
+                    <tr class="staff-row" :class="{ 'staff-row-active': expandedStaffId === staff.userId }"
+                      @click="toggleStaffCustomers(staff)">
+                      <td>
+                        <div class="staff-id">
+                          <span class="row-expand-icon">
+                            <i class="fas"
+                              :class="expandedStaffId === staff.userId ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
+                          </span>
+                          {{ staff.userId }}
                         </div>
-                        <div class="staff-name">{{ staff.nickName }}</div>
-                      </div>
-                    </td>
-                    <td>
-                      <div class="dept-cell">
-                        <i class="fas fa-building"></i>
-                        <span>{{ staff.dept?.deptName || '-' }}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span class="age-badge">{{ staff.age }}</span>
-                    </td>
-                    <td>
-                      <span class="role-tag" :class="getRoleClass(staff.roleId)">
-                        {{ getRoleText(staff.roleId) }}
-                      </span>
-                    </td>
-                    <td>
-                      <!-- 显示电话号码用于调试 -->
-                      <div v-if="staff.phone" class="phone-debug" style="display: none;">
-                        {{ staff.phone }}
-                      </div>
-                      <div class="action-buttons">
-                        <button class="btn-action edit" @click="openEdit(staff)">
-                          <i class="fas fa-edit"></i>
-                          编辑
-                        </button>
-                        <button class="btn-action delete" @click="deleteStaff(staff.userId)">
-                          <i class="fas fa-trash"></i>
-                          删除
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                      </td>
+
+                      <td>
+                        <div class="staff-info">
+                          <div class="staff-avatar">
+                            {{ getAvatarText(staff.nickName) }}
+                          </div>
+                          <div class="staff-name">{{ staff.nickName }}</div>
+                        </div>
+                      </td>
+
+                      <td>
+                        <div class="dept-cell">
+                          <i class="fas fa-building"></i>
+                          <span>{{ staff.dept?.deptName || '-' }}</span>
+                        </div>
+                      </td>
+
+                      <td>
+                        <span class="age-badge">{{ staff.age }}</span>
+                      </td>
+
+                      <td>
+                        <span class="role-tag" :class="getRoleClass(staff.roleId)">
+                          {{ getRoleText(staff.roleId) }}
+                        </span>
+                      </td>
+
+                      <td>
+                        <div class="action-buttons">
+                          <button class="btn-action edit" @click.stop="openEdit(staff)">
+                            <i class="fas fa-edit"></i>
+                            编辑
+                          </button>
+                          <button class="btn-action delete" @click.stop="deleteStaff(staff.userId)">
+                            <i class="fas fa-trash"></i>
+                            删除
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- 展开行：客户树（类似部门树的UI风格） -->
+                    <tr v-if="expandedStaffId === staff.userId" class="expand-row">
+                      <td colspan="6" class="expand-cell">
+                        <div class="customer-panel">
+                          <div class="customer-panel-header">
+                            <div class="customer-panel-title">
+                              <i class="fas fa-sitemap"></i>
+                              <h3>客户列表</h3>
+                              <span class="customer-count" v-if="customerList.length">
+                                ({{ customerList.length }})
+                              </span>
+                            </div>
+
+                            <button class="btn btn-outline btn-sm" @click.stop="collapseCustomers">
+                              <i class="fas fa-compress"></i>
+                              收起
+                            </button>
+                          </div>
+
+                          <div class="customer-tree-container">
+                            <div v-if="customerLoading" class="loading-state small-loading">
+                              <i class="fas fa-spinner fa-spin"></i>
+                              <p>正在加载该员工客户...</p>
+                            </div>
+
+                            <div v-else-if="filteredCustomerList.length === 0" class="empty-tree">
+                              <i class="fas fa-user-slash"></i>
+                              <p>该员工暂无客户或未匹配到结果</p>
+                            </div>
+
+                            <div v-else class="dept-tree customer-tree">
+                              <!-- 根节点（树风格） -->
+                              <div class="dept-tree-item">
+                                <div class="dept-item">
+                                  <div class="dept-item-main active" @click.stop>
+                                    <div class="dept-item-content">
+                                      <div class="dept-icon">
+                                        <i class="fas fa-user-tie"></i>
+                                      </div>
+                                      <div class="dept-info">
+                                        <div class="dept-name">
+                                          {{ staff.nickName }} 的客户
+                                          <span class="dept-count">({{ filteredCustomerList.length }})</span>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                <!-- 子节点（客户列表） -->
+                                <div class="dept-children"
+                                  style="margin-left: 1.5rem; border-left: 1px solid #e8e8e8; padding-left: 1rem;">
+                                  <div v-for="c in filteredCustomerList"
+                                    :key="c.customerId || c.id || c.customerName + '_' + c.phone"
+                                    class="dept-child-item">
+                                    <div class="dept-item">
+                                      <div class="dept-item-main" @click.stop>
+                                        <div class="dept-item-content">
+                                          <div class="dept-icon">
+                                            <i class="fas fa-minus"></i>
+                                          </div>
+                                          <div class="dept-info">
+                                            <div class="dept-name">
+                                              {{ c.customerName || '-' }}
+                                            </div>
+                                            <div class="customer-contact">
+                                              <span v-if="c.phone">
+                                                <i class="fas fa-phone"></i>
+                                                {{ c.phone }}
+                                              </span>
+
+                                              <span v-if="c.email">
+                                                <i class="fas fa-envelope"></i>
+                                                {{ c.email }}
+                                              </span>
+
+                                              <!-- 新增：地址 -->
+                                              <span v-if="c.address">
+                                                <i class="fas fa-location-dot"></i>
+                                                {{ c.address }}
+                                              </span>
+
+                                              <!-- 新增：备注 -->
+                                              <span v-if="c.remark">
+                                                <i class="fas fa-note-sticky"></i>
+                                                {{ c.remark }}
+                                              </span>
+
+                                              <span v-if="!c.phone && !c.email && !c.address && !c.remark"
+                                                class="no-contact">
+                                                未提供联系方式/地址/备注
+                                              </span>
+                                            </div>
+
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                              </div>
+                            </div>
+                          </div>
+
+                        </div>
+                      </td>
+                    </tr>
+                  </template>
                 </tbody>
               </table>
             </div>
@@ -279,10 +405,12 @@
                   @click="handlePageChange(queryParams.pageNum - 1)">
                   <i class="fas fa-chevron-left"></i>
                 </button>
+
                 <button v-for="page in visiblePages" :key="page" class="pagination-btn"
                   :class="{ active: page === queryParams.pageNum }" @click="handlePageChange(page)">
                   {{ page }}
                 </button>
+
                 <button class="pagination-btn"
                   :disabled="queryParams.pageNum >= Math.ceil(total / queryParams.pageSize)"
                   @click="handlePageChange(queryParams.pageNum + 1)">
@@ -290,6 +418,7 @@
                 </button>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -322,7 +451,6 @@
               </div>
             </div>
 
-            <!-- 在部门字段旁边添加密码字段 -->
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label required">
@@ -336,7 +464,6 @@
                 </select>
               </div>
 
-              <!-- 密码字段 - 新增和编辑共用 -->
               <div class="form-group">
                 <label class="form-label" :class="{ required: isAdd }">
                   <i class="fas fa-lock"></i> 密码
@@ -407,7 +534,7 @@
       </div>
     </div>
 
-    <!-- 删除确认弹窗 -->
+    <!-- 删除确认弹窗（保留你原来的结构） -->
     <div v-if="showDeleteConfirm" class="modal-overlay" @click="cancelDelete">
       <div class="modal-content confirm-modal" @click.stop>
         <div class="modal-header">
@@ -439,11 +566,12 @@
         </div>
       </div>
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, watch, onMounted, computed, nextTick } from "vue";
+import { ref, reactive, onMounted, computed, nextTick } from "vue";
 import { ElMessage, ElMessageBox } from "element-plus";
 import request from "@/utils/request";
 
@@ -453,6 +581,19 @@ const addStaff = (data) => request({ url: "/company/staff/add", method: "post", 
 const updateStaff = (data) => request({ url: "/company/staff/update", method: "put", data });
 const deleteStaffApi = (id) => request({ url: `/company/staff/${id}`, method: "delete" });
 const getDeptTree = () => request({ url: "/company/staff/deptTree", method: "get" });
+
+/**
+ * 关键新增：根据员工号获取客户列表
+ * 你把下面这个 url 改成你后端真实接口即可：
+ * - 例1：GET /company/staff/customers?userId=123
+ * - 例2：GET /company/staff/123/customers
+ */
+const getStaffCustomersApi = (userId) =>
+  request({
+    url: "/company/staff/customers",
+    method: "get",
+    params: { userId },
+  });
 
 /* ---------- 响应式数据 ---------- */
 const loading = ref(false);
@@ -473,26 +614,41 @@ const queryParams = reactive({
   deptId: undefined,
 });
 
+/* =======================
+ * DEMO：员工号=1 的假客户数据（用于展示树形展开）
+ * 用完可把 DEMO_ENABLE 改成 false 或删掉整段
+ * ======================= */
+const DEMO_ENABLE = true;
+const DEMO_STAFF_ID = 1;
+
+const DEMO_CUSTOMERS_FOR_STAFF_1 = [
+  { customerId: 1001, customerName: "张三（演示）", phone: "13800000001", email: "zhangsan_demo@corp.com", address: "杭州市西湖区文三路 1 号", remark: "意向客户，回访中" },
+  { customerId: 1002, customerName: "李四（演示）", phone: "13800000002", email: "lisi_demo@corp.com", address: "上海市浦东新区世纪大道 88 号", remark: "已成交，维护关系" },
+  { customerId: 1003, customerName: "王五（演示）", phone: "13800000003", email: "", address: "北京市海淀区中关村大街 10 号", remark: "关注价格，需二次报价" },
+  { customerId: 1004, customerName: "赵六（演示）", phone: "", email: "zhaoliu_demo@corp.com", address: "深圳市南山区科技园 5 号楼", remark: "备注为空也可展示 '-'" },
+];
+
+
+
 /* ---------- 部门树 ---------- */
 const deptTree = ref([]);
 const deptFilter = ref("");
 const deptSelectOptions = ref([]);
+const filteredDeptTree = ref([]);
 
-// 初始化部门展开状态
 const initDeptExpandStatus = (depts) => {
   return depts.map(dept => {
     const newDept = {
       ...dept,
       _expanded: isExpandAll.value
-    }
+    };
     if (dept.children && dept.children.length > 0) {
-      newDept.children = initDeptExpandStatus(dept.children)
+      newDept.children = initDeptExpandStatus(dept.children);
     }
-    return newDept
-  })
-}
+    return newDept;
+  });
+};
 
-// 过滤部门树
 const filterDeptTree = () => {
   if (!deptFilter.value) {
     filteredDeptTree.value = initDeptExpandStatus(deptTree.value);
@@ -503,16 +659,14 @@ const filterDeptTree = () => {
 
   const filterDepts = (depts) => {
     return depts.filter(dept => {
-      const matches = dept.label.toLowerCase().includes(searchText);
-      if (matches) {
-        return true;
-      }
+      const matches = (dept.label || "").toLowerCase().includes(searchText);
+      if (matches) return true;
 
       if (dept.children && dept.children.length > 0) {
         const filteredChildren = filterDepts(dept.children);
         if (filteredChildren.length > 0) {
           dept.children = filteredChildren;
-          dept._expanded = true; // 展开包含匹配子项的部门
+          dept._expanded = true;
           return true;
         }
       }
@@ -523,8 +677,6 @@ const filterDeptTree = () => {
   const filtered = filterDepts(JSON.parse(JSON.stringify(deptTree.value)));
   filteredDeptTree.value = initDeptExpandStatus(filtered);
 };
-
-const filteredDeptTree = ref([]);
 
 const handleDeptSelect = (dept) => {
   queryParams.deptId = dept.deptId;
@@ -539,9 +691,7 @@ const toggleDeptExpand = (deptId) => {
         return true;
       }
       if (dept.children && dept.children.length > 0) {
-        if (toggle(dept.children)) {
-          return true;
-        }
+        if (toggle(dept.children)) return true;
       }
     }
     return false;
@@ -577,6 +727,7 @@ const toggleExpandAll = () => {
 const dialogVisible = ref(false);
 const dialogTitle = ref("");
 const isAdd = ref(true);
+
 const form = reactive({
   userId: null,
   nickName: "",
@@ -590,43 +741,14 @@ const form = reactive({
   remark: "",
 });
 
-// 基础表单验证函数
-/* ---------- 表单验证 ---------- */
 const validateForm = () => {
   const errors = [];
-
-  // 1. 姓名必填
-  if (!form.nickName || form.nickName.trim() === '') {
-    errors.push('请输入员工姓名');
-  }
-
-  // 2. 账号必填
-  if (!form.userName || form.userName.trim() === '') {
-    errors.push('请输入登录账号');
-  }
-
-  // 3. 新增员工时密码必填
-  if (isAdd.value) {
-    if (!form.password || form.password.trim() === '') {
-      errors.push('请输入密码');
-    }
-  }
-
-  // 4. 部门必填
-  if (!form.deptId) {
-    errors.push('请选择部门');
-  }
-
-  // 5. 职位必填
-  if (!form.roleId) {
-    errors.push('请选择职位');
-  }
-
-  // 6. 年龄必填
-  if (!form.age) {
-    errors.push('请输入年龄');
-  }
-
+  if (!form.nickName || form.nickName.trim() === '') errors.push('请输入员工姓名');
+  if (!form.userName || form.userName.trim() === '') errors.push('请输入登录账号');
+  if (isAdd.value && (!form.password || form.password.trim() === '')) errors.push('请输入密码');
+  if (!form.deptId) errors.push('请选择部门');
+  if (!form.roleId) errors.push('请选择职位');
+  if (!form.age) errors.push('请输入年龄');
   return errors;
 };
 
@@ -686,33 +808,31 @@ const loadTree = async () => {
   filteredDeptTree.value = initDeptExpandStatus(treeData);
 };
 
-/* ---------- 数据操作 ---------- */
+/* ---------- 员工列表 ---------- */
 const getList = async () => {
   loading.value = true;
   try {
     const res = await listStaff(queryParams);
-    
-    // 如果API返回的数据中没有phone字段，添加一个默认值
-    tableData.value = res.rows.map(item => {
-      // 确保所有必需的字段都有值
-      const processedItem = {
-        userId: item.userId,
-        nickName: item.nickName || '',
-        userName: item.userName || '',
-        deptId: item.deptId || null,
-        dept: item.dept || null,
-        age: item.age || 18,
-        roleId: item.roleId || 100,
-        // 如果API返回了phone字段就用，否则用空字符串
-        phone: item.phone || item.telephone || item.mobile || '',
-        email: item.email || '',
-        remark: item.remark || ''
-      };
-      
-      return processedItem;
-    });
-    
-    total.value = res.total;
+
+    tableData.value = (res.rows || []).map(item => ({
+      userId: item.userId,
+      nickName: item.nickName || '',
+      userName: item.userName || '',
+      deptId: item.deptId || null,
+      dept: item.dept || null,
+      age: item.age || 18,
+      roleId: item.roleId || 100,
+      phone: item.phone || item.telephone || item.mobile || '',
+      email: item.email || '',
+      remark: item.remark || ''
+    }));
+
+    total.value = res.total || 0;
+
+    // 列表刷新后，如果当前展开员工不在本页了，自动收起
+    if (expandedStaffId.value && !tableData.value.some(s => s.userId === expandedStaffId.value)) {
+      collapseCustomers();
+    }
   } finally {
     loading.value = false;
   }
@@ -733,7 +853,7 @@ const openAdd = () => {
     userId: null,
     nickName: "",
     userName: "",
-    password: "", // 新增时需要密码
+    password: "",
     deptId: null,
     age: 18,
     roleId: null,
@@ -749,30 +869,22 @@ const openEdit = (row) => {
   dialogTitle.value = "编辑员工";
   isAdd.value = false;
 
-  // 调试：打印行数据，查看电话字段是否存在
-  console.log('编辑行数据:', row);
-  console.log('电话号码:', row.phone);
-
   Object.assign(form, {
     userId: row.userId,
     nickName: row.nickName || "",
     userName: row.userName || "",
-    password: "", // 编辑时清空密码字段
+    password: "",
     deptId: row.deptId || null,
     age: row.age || 18,
     roleId: row.roleId || null,
-    phone: row.phone || "", // 确保这里正确赋值
+    phone: row.phone || "",
     email: row.email || "",
     remark: row.remark || "",
   });
 
-  // 调试：打印赋值后的表单数据
-  console.log('表单数据:', form);
-
   dialogVisible.value = true;
   showPassword.value = false;
 };
-
 
 const submitForm = async () => {
   const errors = validateForm();
@@ -781,26 +893,17 @@ const submitForm = async () => {
     return;
   }
 
-  // 准备提交数据
   const submitData = { ...form };
 
-  // 编辑时：如果密码为空，则删除password字段（不修改密码）
   if (!isAdd.value) {
     if (!submitData.password || submitData.password.trim() === '') {
       delete submitData.password;
     }
   }
 
-  // 确保数据类型正确
-  if (submitData.deptId) {
-    submitData.deptId = Number(submitData.deptId);
-  }
-  if (submitData.roleId) {
-    submitData.roleId = Number(submitData.roleId);
-  }
-  if (submitData.age) {
-    submitData.age = Number(submitData.age);
-  }
+  if (submitData.deptId) submitData.deptId = Number(submitData.deptId);
+  if (submitData.roleId) submitData.roleId = Number(submitData.roleId);
+  if (submitData.age) submitData.age = Number(submitData.age);
 
   try {
     const api = isAdd.value ? addStaff : updateStaff;
@@ -813,7 +916,6 @@ const submitForm = async () => {
       ElMessage.error(res.msg || '操作失败');
     }
   } catch (err) {
-    console.error('操作失败:', err);
     ElMessage.error('操作失败：' + (err.message || '网络错误'));
   }
 };
@@ -833,12 +935,9 @@ const deleteStaff = (id) => {
         ElMessage.error(res.msg || '删除失败');
       }
     } catch (err) {
-      console.error('删除失败:', err);
       ElMessage.error('删除失败：' + (err.message || '网络错误'));
     }
-  }).catch(() => {
-    // 用户取消删除
-  });
+  }).catch(() => { });
 };
 
 /* ---------- 分页 ---------- */
@@ -847,7 +946,6 @@ const visiblePages = computed(() => {
   const currentPage = queryParams.pageNum;
   const pages = [];
 
-  // 最多显示5个页码
   let start = Math.max(1, currentPage - 2);
   let end = Math.min(totalPages, start + 4);
 
@@ -855,10 +953,7 @@ const visiblePages = computed(() => {
     start = Math.max(1, end - 4);
   }
 
-  for (let i = start; i <= end; i++) {
-    pages.push(i);
-  }
-
+  for (let i = start; i <= end; i++) pages.push(i);
   return pages;
 });
 
@@ -872,12 +967,136 @@ const toggleSearch = () => {
   showSearch.value = !showSearch.value;
 };
 
+/* =======================================================================================
+ * 关键新增：点击员工 -> 拉取该员工客户 -> 展示树
+ * ======================================================================================= */
+const expandedStaffId = ref(null);       // 当前展开的员工 userId
+const customerLoading = ref(false);      // 客户加载状态
+const customerList = ref([]);            // 当前员工的客户列表
+
+// 缓存：避免同一个员工反复点击时重复请求
+const customerCache = reactive({}); // { [userId]: customers[] }
+
+const normalizeCustomers = (list) => {
+  return (list || []).map((c) => ({
+    customerId: c.customerId || c.id || c.cid || null,
+    customerName: c.customerName || c.name || c.nickName || c.realName || "",
+    phone: c.phone || c.mobile || c.telephone || "",
+    email: c.email || "",
+    // 新增：地址（兼容几种常见字段名）
+    address: c.address || c.addr || c.location || c.customerAddress || "",
+    // 新增：备注（兼容几种常见字段名）
+    remark: c.remark || c.note || c.memo || c.comment || "",
+  }));
+};
+
+
+const loadCustomersByStaff = async (userId) => {
+  if (!userId) {
+    customerList.value = [];
+    return;
+  }
+
+  // DEMO：员工号=1 时直接返回假客户，确保能展示树形展开效果
+  if (DEMO_ENABLE && Number(userId) === DEMO_STAFF_ID) {
+    const normalized = normalizeCustomers(DEMO_CUSTOMERS_FOR_STAFF_1);
+    customerCache[userId] = normalized;
+    customerList.value = normalized;
+    return;
+  }
+
+
+  // 有缓存直接用
+  if (customerCache[userId]) {
+    customerList.value = customerCache[userId];
+    return;
+  }
+
+  customerLoading.value = true;
+  try {
+    const res = await getStaffCustomersApi(userId);
+
+    // 兼容多种返回结构：data / rows
+    const rawList = res.data || res.rows || [];
+    let normalized = normalizeCustomers(rawList);
+
+    /** 演示数据：仅用于员工号=1 且后端没返回任何客户时 */
+    if (String(userId) === "1" && (!normalized || normalized.length === 0)) {
+      normalized = normalizeCustomers([
+        {
+          id: 101,
+          customerName: "张三",
+          phone: "13800001111",
+          email: "zhangsan@example.com",
+          address: "杭州市西湖区文三路 88 号",
+          remark: "重点客户，意向强",
+        },
+        {
+          id: 102,
+          customerName: "李四",
+          phone: "13900002222",
+          email: "lisi@example.com",
+          address: "杭州市滨江区江南大道 66 号",
+          remark: "下周回访",
+        },
+        {
+          id: 103,
+          customerName: "王五",
+          phone: "",
+          email: "",
+          address: "杭州市上城区延安路 1 号",
+          remark: "仅线下沟通",
+        },
+      ]);
+    }
+
+    customerCache[userId] = normalized;
+    customerList.value = normalized;
+
+  } catch (e) {
+    customerList.value = [];
+    ElMessage.error("获取客户失败：" + (e.message || "网络错误"));
+  } finally {
+    customerLoading.value = false;
+  }
+};
+
+const toggleStaffCustomers = async (staff) => {
+  const userId = staff?.userId;
+  if (!userId) {
+    ElMessage.error("该员工缺少员工号(userId)，无法查询客户");
+    return;
+  }
+
+  // 再点一次：收起
+  if (expandedStaffId.value === userId) {
+    collapseCustomers();
+    return;
+  }
+
+  // 展开新员工
+  expandedStaffId.value = userId;
+  customerList.value = [];
+
+  await loadCustomersByStaff(userId);
+};
+
+const collapseCustomers = () => {
+  expandedStaffId.value = null;
+  customerList.value = [];
+};
+
+const filteredCustomerList = computed(() => customerList.value);
+
+
 /* ---------- 初始化 ---------- */
 onMounted(() => {
   loadDept();
   loadTree();
   getList();
 });
+
+
 </script>
 
 <style scoped>
@@ -998,6 +1217,12 @@ onMounted(() => {
 .btn-danger:hover {
   background-color: #ff7875;
   box-shadow: 0 2px 8px rgba(255, 77, 79, 0.3);
+}
+
+.btn-sm {
+  padding: 0.35rem 0.8rem;
+  font-size: 0.8rem;
+  border-radius: 6px;
 }
 
 /* 查询卡片 */
@@ -1279,6 +1504,10 @@ onMounted(() => {
   justify-content: center;
 }
 
+.small-loading {
+  padding: 1.8rem;
+}
+
 .loading-spinner {
   font-size: 2rem;
   margin-bottom: 1rem;
@@ -1325,7 +1554,7 @@ onMounted(() => {
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 800px;
+  min-width: 900px;
 }
 
 .data-table thead {
@@ -1356,14 +1585,32 @@ onMounted(() => {
   vertical-align: middle;
 }
 
-/* 员工信息样式 */
+/* 关键新增：员工行可点击 + 展开箭头 */
+.staff-row {
+  cursor: pointer;
+}
+
+.staff-row-active {
+  background-color: #f0f9ff;
+}
+
+.row-expand-icon {
+  display: inline-flex;
+  width: 18px;
+  margin-right: 6px;
+  color: #8c8c8c;
+}
+
 .staff-id {
   font-family: 'Courier New', monospace;
   font-weight: 600;
   color: #1890ff;
   font-size: 0.9rem;
+  display: flex;
+  align-items: center;
 }
 
+/* 员工信息样式 */
 .staff-info {
   display: flex;
   align-items: center;
@@ -1470,6 +1717,85 @@ onMounted(() => {
   background-color: #ffccc7;
 }
 
+/* 展开行（客户树容器） */
+.expand-row td {
+  padding: 0;
+  background: #fff;
+}
+
+.expand-cell {
+  padding: 0 !important;
+}
+
+.customer-panel {
+  padding: 1rem 1.25rem 1.25rem;
+  border-top: 1px solid #f0f0f0;
+  background: #fafcff;
+}
+
+.customer-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.8rem;
+}
+
+.customer-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #2c3e50;
+}
+
+.customer-panel-title i {
+  color: #1890ff;
+}
+
+.customer-panel-title h3 {
+  font-size: 1rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.customer-count {
+  color: #8c8c8c;
+  font-size: 0.85rem;
+}
+
+.customer-panel-search {
+  margin-bottom: 0.8rem;
+}
+
+/* 客户联系方式显示 */
+.customer-contact {
+  margin-top: 0.25rem;
+  display: flex;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  font-size: 0.82rem;
+  color: #8c8c8c;
+}
+
+.customer-contact i {
+  margin-right: 0.35rem;
+  color: #1890ff;
+}
+
+.no-contact {
+  color: #bfbfbf;
+}
+
+.customer-tree-container {
+  background: #fff;
+  border: 1px solid #eef2f6;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.customer-tree {
+  padding: 0.5rem 0;
+}
+
 /* 分页样式 */
 .pagination-container {
   border-top: 1px solid #f0f0f0;
@@ -1522,7 +1848,7 @@ onMounted(() => {
   cursor: not-allowed;
 }
 
-/* 弹窗样式 */
+/* 弹窗样式（保留你原来的） */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -1727,7 +2053,7 @@ onMounted(() => {
   gap: 0.5rem;
 }
 
-/* 响应式设计 */
+/* 响应式 */
 @media (max-width: 1200px) {
   .content-layout {
     grid-template-columns: 1fr;
@@ -1806,33 +2132,6 @@ onMounted(() => {
 
   .dept-children {
     margin-left: 1rem !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .staff-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .dept-item-main {
-    padding: 0.75rem;
-  }
-
-  .sidebar-header {
-    padding: 1rem;
-  }
-
-  .info-text {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .dept-selected {
-    margin-left: 0;
-    margin-top: 0.5rem;
   }
 }
 </style>
