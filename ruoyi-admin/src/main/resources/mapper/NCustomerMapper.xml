@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.NCustomerMapper">
+    
+    <resultMap type="NCustomer" id="NCustomerResult">
+        <result property="id"    column="id"    />
+        <result property="tenantId"    column="tenant_id"    />
+        <result property="cCode"    column="c_code"    />
+        <result property="name"    column="name"    />
+        <result property="type"    column="type"    />
+        <result property="age"    column="age"    />
+        <result property="phone"    column="phone"    />
+        <result property="email"    column="email"    />
+        <result property="address"    column="address"    />
+        <result property="teamId"    column="team_id"    />
+        <result property="status"    column="status"    />
+        <result property="remark"    column="remark"    />
+        <result property="createdBy"    column="created_by"    />
+        <result property="createdAt"    column="created_at"    />
+        <result property="updatedAt"    column="updated_at"    />
+        <result property="updatedBy"    column="updated_by"    />
+        <result property="isDeleted"    column="is_deleted"    />
+    </resultMap>
+
+    <sql id="selectNCustomerVo">
+        select id, tenant_id, c_code, name, type, age, phone, email, address, team_id, status, remark, created_by, created_at, updated_at, updated_by, is_deleted from n_customer
+    </sql>
+
+    <select id="selectNCustomerList" parameterType="NCustomer" resultMap="NCustomerResult">
+        <include refid="selectNCustomerVo"/>
+        <where>  
+            <if test="tenantId != null "> and tenant_id = #{tenantId}</if>
+            <if test="cCode != null  and cCode != ''"> and c_code = #{cCode}</if>
+            <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
+            <if test="type != null  and type != ''"> and type = #{type}</if>
+            <if test="age != null "> and age = #{age}</if>
+            <if test="phone != null  and phone != ''"> and phone = #{phone}</if>
+            <if test="email != null  and email != ''"> and email = #{email}</if>
+            <if test="address != null  and address != ''"> and address = #{address}</if>
+            <if test="teamId != null "> and team_id = #{teamId}</if>
+            <if test="status != null "> and status = #{status}</if>
+            <if test="createdBy != null "> and created_by = #{createdBy}</if>
+            <if test="createdAt != null "> and created_at = #{createdAt}</if>
+            <if test="updatedAt != null "> and updated_at = #{updatedAt}</if>
+            <if test="updatedBy != null "> and updated_by = #{updatedBy}</if>
+            <if test="isDeleted != null "> and is_deleted = #{isDeleted}</if>
+        </where>
+    </select>
+    
+    <select id="selectNCustomerById" parameterType="Long" resultMap="NCustomerResult">
+        <include refid="selectNCustomerVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertNCustomer" parameterType="NCustomer" useGeneratedKeys="true" keyProperty="id">
+        insert into n_customer
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="tenantId != null">tenant_id,</if>
+            <if test="cCode != null">c_code,</if>
+            <if test="name != null and name != ''">name,</if>
+            <if test="type != null">type,</if>
+            <if test="age != null">age,</if>
+            <if test="phone != null">phone,</if>
+            <if test="email != null">email,</if>
+            <if test="address != null">address,</if>
+            <if test="teamId != null">team_id,</if>
+            <if test="status != null">status,</if>
+            <if test="remark != null">remark,</if>
+            <if test="createdBy != null">created_by,</if>
+            <if test="createdAt != null">created_at,</if>
+            <if test="updatedAt != null">updated_at,</if>
+            <if test="updatedBy != null">updated_by,</if>
+            <if test="isDeleted != null">is_deleted,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="tenantId != null">#{tenantId},</if>
+            <if test="cCode != null">#{cCode},</if>
+            <if test="name != null and name != ''">#{name},</if>
+            <if test="type != null">#{type},</if>
+            <if test="age != null">#{age},</if>
+            <if test="phone != null">#{phone},</if>
+            <if test="email != null">#{email},</if>
+            <if test="address != null">#{address},</if>
+            <if test="teamId != null">#{teamId},</if>
+            <if test="status != null">#{status},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="createdBy != null">#{createdBy},</if>
+            <if test="createdAt != null">#{createdAt},</if>
+            <if test="updatedAt != null">#{updatedAt},</if>
+            <if test="updatedBy != null">#{updatedBy},</if>
+            <if test="isDeleted != null">#{isDeleted},</if>
+         </trim>
+    </insert>
+
+    <update id="updateNCustomer" parameterType="NCustomer">
+        update n_customer
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="tenantId != null">tenant_id = #{tenantId},</if>
+            <if test="cCode != null">c_code = #{cCode},</if>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="type != null">type = #{type},</if>
+            <if test="age != null">age = #{age},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="teamId != null">team_id = #{teamId},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="createdBy != null">created_by = #{createdBy},</if>
+            <if test="createdAt != null">created_at = #{createdAt},</if>
+            <if test="updatedAt != null">updated_at = #{updatedAt},</if>
+            <if test="updatedBy != null">updated_by = #{updatedBy},</if>
+            <if test="isDeleted != null">is_deleted = #{isDeleted},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteNCustomerById" parameterType="Long">
+        delete from n_customer where id = #{id}
+    </delete>
+
+    <delete id="deleteNCustomerByIds" parameterType="String">
+        delete from n_customer where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
