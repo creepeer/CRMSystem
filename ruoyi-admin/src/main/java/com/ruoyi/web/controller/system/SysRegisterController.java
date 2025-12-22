@@ -32,7 +32,6 @@ public class SysRegisterController extends BaseController
         {
             return error("当前系统没有开启注册功能！");
         }
-        System.out.println("user"+user);
         String msg = registerService.register(user);
         return StringUtils.isEmpty(msg) ? success() : error(msg);
     }

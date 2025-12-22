@@ -51,6 +51,7 @@ public class SysRegisterService
         String msg = "", username = registerBody.getUsername(), password = registerBody.getPassword();
         SysUser sysUser = new SysUser();
         NCompany nCompany=new NCompany();
+        nCompany.setState(1);
         BeanUtils.copyProperties(registerBody,nCompany);
         nCompany.setTenantId(1L);
         nCompanyService.insertNCompany(nCompany);
