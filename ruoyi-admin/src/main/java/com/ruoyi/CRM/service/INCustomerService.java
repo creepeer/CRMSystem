@@ -1,6 +1,8 @@
 package com.ruoyi.CRM.service;
 
 import java.util.List;
+
+import com.ruoyi.CRM.DTO.CustomerDTO;
 import com.ruoyi.CRM.domain.NCustomer;
 
 /**
@@ -30,10 +32,10 @@ public interface INCustomerService
     /**
      * 新增【请填写功能名称】
      * 
-     * @param nCustomer 【请填写功能名称】
+     * @param customerDTO 【请填写功能名称】
      * @return 结果
      */
-    public int insertNCustomer(NCustomer nCustomer);
+    public int insertNCustomer(CustomerDTO customerDTO,Long tenantId,Long userId);
 
     /**
      * 修改【请填写功能名称】

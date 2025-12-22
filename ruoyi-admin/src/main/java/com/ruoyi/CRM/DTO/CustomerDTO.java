@@ -45,4 +45,5 @@ public class CustomerDTO {
     @ApiModelProperty(value = "备注", example = "重要客户")
     @Size(max = 500, message = "备注长度不能超过500个字符")
     private String remark;
+
 }
