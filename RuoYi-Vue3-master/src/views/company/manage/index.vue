@@ -1,1217 +1,546 @@
 <template>
-  <div class="employee-container">
-    <!-- 简化后导航栏（仅保留logo） -->
-    <nav class="navbar">
-      <div class="navbar-brand">
-        <div class="logo">
-          <i class="fas fa-users"></i>
-          <h1>员工管理</h1>
-        </div>
-      </div>
-    </nav>
+  <div class="enterprise-verify-container">
+    <!-- 顶部品牌栏 -->
+    <div class="brand-header">
+      <h1>先锋互联</h1>
+    </div>
 
-    <!-- 主要内容区域 -->
-    <main class="main-content">
-      <!-- 页面标题和操作栏 -->
-      <div class="page-header">
-        <div class="header-content">
-          <h2 class="page-title">员工管理</h2>
-          <p class="page-subtitle">管理系统员工信息</p>
-        </div>
-        <div class="actions">
-          <button class="btn btn-primary" @click="handleAdd">
-            <i class="fas fa-plus"></i>
-            新增
-          </button>
-          <button class="btn btn-outline" @click="handleExport">
-            <i class="fas fa-download"></i>
-            导出
-          </button>
-          <button class="btn btn-outline" @click="toggleSearch">
-            <i class="fas" :class="showSearch ? 'fa-search-minus' : 'fa-search'"></i>
-            {{ showSearch ? '隐藏搜索' : '显示搜索' }}
-          </button>
-        </div>
+    <!-- 页面标题栏 -->
+    <div class="page-title-bar">
+      <div>
+        <h2>企业验证管理</h2>
+        <p class="sub-title">管理所有企业验证信息</p>
       </div>
+      <!-- 可扩展功能按钮（如新增） -->
+    </div>
 
-      <!-- 查询条件 -->
-      <div v-show="showSearch" class="query-card">
-        <div class="query-row">
-          <div class="query-group">
-            <label class="query-label">员工姓名</label>
-            <input 
+    <!-- 搜索筛选区 -->
+    <div class="search-filter-card">
+      <el-form :inline="true" :model="searchForm" class="search-form">
+        <el-form-item label="企业名称">
+          <el-input v-model="searchForm.companyName" placeholder="请输入企业名称"></el-input>
+        </el-form-item>
+        <el-form-item label="验证状态">
+          <!-- 下拉框设置固定宽度，保证字体显示空间 -->
+          <el-select 
+            v-model="selectedStatus" 
+            placeholder="请选择状态"
+            style="width: 160px;">
+            <el-option label="全部" value=""></el-option>
+            <el-option label="待审核" value="pending"></el-option>
+            <el-option label="已通过" value="passed"></el-option>
+            <el-option label="已驳回" value="rejected"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" class="search-btn" @click="handleSearch">搜索</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </div>
+
+    <!-- 数据列表 -->
+    <div class="table-card">
+      <el-table :data="tableData" border stripe style="width: 100%" size="large">
+        <el-table-column prop="id" label="企业编号" width="120"></el-table-column>
+        <el-table-column label="企业名称" min-width="200">
+          <template #default="scope">
+            <div class="company-name-item">
+              <el-avatar :size="36" class="name-avatar">
+                {{ scope.row.companyName.slice(0, 1) }}
+              </el-avatar>
+              <span class="name-text">{{ scope.row.companyName }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="legalPerson" label="法人" width="120"></el-table-column>
+        <el-table-column prop="phone" label="联系方式" width="160"></el-table-column>
+        <el-table-column prop="applyTime" label="申请时间" width="200"></el-table-column>
+        <el-table-column prop="status" label="验证状态" width="140">
+          <template #default="scope">
+            <el-tag 
+              :class="scope.row.status === 'pending' ? 'tag-warning' : 
+                      scope.row.status === 'passed' ? 'tag-success' : 'tag-danger'"
+              size="medium">
+              {{ scope.row.status === 'pending' ? '待审核' : 
+                 scope.row.status === 'passed' ? '已通过' : '已驳回' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="180">
+          <template #default="scope">
+            <el-button type="text" class="operate-btn" @click="handleDetail(scope.row)">详情</el-button>
+            <el-button 
+              v-if="scope.row.status === 'pending'" 
               type="text" 
-              v-model="queryParams.roleName"
-              placeholder="请输入员工姓名"
-              class="query-input"
-              @keyup.enter="handleQuery"
-            >
-          </div>
-          <div class="query-group">
-            <label class="query-label">部门</label>
-            <input 
-              type="text" 
-              v-model="queryParams.roleKey"
-              placeholder="请输入部门"
-              class="query-input"
-              @keyup.enter="handleQuery"
-            >
-          </div>
-          <div class="query-group">
-            <label class="query-label">创建时间</label>
-            <div class="date-range-picker">
-              <input 
-                type="date" 
-                v-model="dateRangeStart"
-                class="query-input"
-                placeholder="开始日期"
-              >
-              <span class="date-separator">至</span>
-              <input 
-                type="date" 
-                v-model="dateRangeEnd"
-                class="query-input"
-                placeholder="结束日期"
-              >
-            </div>
-          </div>
-          <div class="query-actions">
-            <button class="btn btn-primary" @click="handleQuery">
-              <i class="fas fa-search"></i>
-              搜索
-            </button>
-            <button class="btn btn-outline" @click="resetQuery">
-              <i class="fas fa-redo"></i>
-              重置
-            </button>
-          </div>
-        </div>
-      </div>
+              class="operate-btn audit-btn" 
+              @click="handleAudit(scope.row)">审核
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
-      <!-- 批量操作栏 -->
-      <div class="batch-actions" v-if="ids.length > 0">
-        <span class="batch-info">已选择 {{ ids.length }} 项</span>
-        <button 
-          class="btn btn-outline delete" 
-          @click="handleBatchDelete"
-          :disabled="multiple"
-        >
-          <i class="fas fa-trash"></i>
-          批量删除
-        </button>
-        <button class="btn btn-outline" @click="clearSelection">
-          <i class="fas fa-times"></i>
-          取消选择
-        </button>
-      </div>
-
-      <!-- 员工列表 -->
-      <div class="content-card">
-        <div class="table-container">
-          <table class="employee-table">
-            <thead>
-              <tr>
-                <th>
-                  <input 
-                    type="checkbox" 
-                    v-model="selectAll"
-                    @change="toggleSelectAll"
-                  >
-                </th>
-                <th>员工号</th>
-                <th>姓名</th>
-                <th>部门</th>
-                <th>年龄</th>
-                <th>职位</th>
-                <th class="actions-col">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="(role, index) in roleList" :key="index + role.roleId">
-                <td class="selection-col">
-                  <input 
-                    type="checkbox" 
-                    v-model="ids" 
-                    :value="role.roleId"
-                    @change="handleSelectionChange"
-                  >
-                </td>
-                <td class="employee-id">{{ role.roleId }}</td>
-                <td>
-                  <div class="employee-name">
-                    <div class="avatar">
-                      {{ role.roleName?.charAt(0) || '?' }}
-                    </div>
-                    {{ role.roleName }}
-                  </div>
-                </td>
-                <td>{{ role.roleKey }}</td>
-                <td>{{ role.roleSort || '-' }}岁</td>
-                <td>
-                  <span class="position-badge" :class="role.status === '0' ? 'manager' : 'employee'">
-                    {{ role.status === '0' ? '经理' : '员工' }}
-                  </span>
-                </td>
-                <td class="actions-col">
-                  <div class="actions-cell">
-                    <button 
-                      class="btn-action edit" 
-                      @click="handleUpdate(role)"
-                      v-if="role.roleId !== 1"
-                    >
-                      <i class="fas fa-edit"></i>
-                      修改
-                    </button>
-                    <button 
-                      class="btn-action delete" 
-                      @click="handleDelete(role)"
-                    >
-                      <i class="fas fa-trash"></i>
-                      删除
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <!-- 空状态 -->
-        <div v-if="roleList.length === 0" class="empty-state">
-          <i class="fas fa-user-friends empty-icon"></i>
-          <p>暂无员工数据</p>
-          <button class="btn btn-outline mt-3" @click="handleAdd">
-            <i class="fas fa-plus"></i>
-            立即添加员工
-          </button>
-        </div>
-
-        <!-- 分页 -->
-        <div class="pagination" v-if="roleList.length > 0">
-          <div class="pagination-info">
-            共 {{ total }} 条记录
-          </div>
-          <div class="pagination-controls">
-            <button 
-              class="pagination-btn" 
-              :disabled="queryParams.pageNum === 1" 
-              @click="prevPage"
-            >
-              <i class="fas fa-chevron-left"></i>
-            </button>
-            <span class="pagination-text">
-              第 {{ queryParams.pageNum }} / {{ Math.ceil(total / queryParams.pageSize) }} 页
-            </span>
-            <button 
-              class="pagination-btn" 
-              :disabled="queryParams.pageNum >= Math.ceil(total / queryParams.pageSize)" 
-              @click="nextPage"
-            >
-              <i class="fas fa-chevron-right"></i>
-            </button>
-          </div>
-        </div>
-      </div>
-    </main>
-
-    <!-- 新增/编辑员工弹窗 -->
-    <div v-if="open" class="modal-overlay" @click="cancel">
-      <div class="modal-content" @click.stop>
-        <div class="modal-header">
-          <h3>{{ title }}</h3>
-          <button class="close-btn" @click="cancel">
-            <i class="fas fa-times"></i>
-          </button>
-        </div>
-        
-        <div class="modal-body">
-          <form @submit.prevent="submitForm" class="employee-form">
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label required">员工号</label>
-                <input 
-                  type="text" 
-                  v-model="form.roleId"
-                  placeholder="请输入员工号"
-                  class="form-input"
-                  :disabled="form.roleId !== undefined"
-                >
-              </div>
-              <div class="form-group">
-                <label class="form-label required">职位</label>
-                <select v-model="form.status" class="form-select" required>
-                  <option value="0">经理</option>
-                  <option value="1">员工</option>
-                </select>
-              </div>
-            </div>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label required">姓名</label>
-                <input 
-                  type="text" 
-                  v-model="form.roleName"
-                  placeholder="请输入姓名"
-                  class="form-input"
-                  required
-                >
-              </div>
-              <div class="form-group">
-                <label class="form-label required">账号</label>
-                <input 
-                  type="text" 
-                  v-model="form.remark"
-                  placeholder="请输入登录账号"
-                  class="form-input"
-                  required
-                >
-              </div>
-            </div>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label required">部门</label>
-                <input 
-                  type="text" 
-                  v-model="form.roleKey"
-                  placeholder="请输入部门"
-                  class="form-input"
-                  required
-                >
-              </div>
-              <div class="form-group">
-                <label class="form-label" :class="{ required: !form.roleId }">
-                  {{ form.roleId ? '密码' : '密码（留空则不修改）' }}
-                </label>
-                <div class="password-input">
-                  <input 
-                    :type="showPassword ? 'text' : 'password'"
-                    v-model="form.password"
-                    :placeholder="form.roleId ? '请输入新密码' : '请输入密码'"
-                    class="form-input"
-                    :required="!form.roleId"
-                  >
-                  <button 
-                    type="button" 
-                    class="password-toggle"
-                    @click="showPassword = !showPassword"
-                  >
-                    <i :class="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-            
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label required">年龄</label>
-                <input 
-                  type="number" 
-                  v-model.number="form.roleSort"
-                  placeholder="请输入年龄"
-                  min="18"
-                  max="65"
-                  class="form-input"
-                  required
-                >
-              </div>
-              <div class="form-group"></div> <!-- 占位 -->
-            </div>
-            
-            <div class="form-actions">
-              <button type="button" class="btn btn-outline" @click="cancel">
-                取消
-              </button>
-              <button type="submit" class="btn btn-primary">
-                {{ form.roleId ? '确认修改' : '确认添加' }}
-              </button>
-            </div>
-          </form>
-        </div>
+      <!-- 分页组件（与客户管理页风格一致） -->
+      <div class="pagination-container">
+        <span class="total-count">共 {{ total }} 条记录</span>
+        <el-pagination
+          @current-change="handleCurrentChange"
+          :current-page="currentPage"
+          layout="prev, pager, next, jumper"
+          :page-size="pageSize"
+          :total="total"
+          background
+          style="margin-left: 10px;"
+          size="large">
+        </el-pagination>
       </div>
     </div>
+
+    <!-- 详情弹窗（保持风格统一） -->
+    <el-dialog
+      v-model="detailDialogVisible"
+      title="企业验证详情"
+      width="70%"
+      destroy-on-close
+      :close-on-click-modal="false"
+      :custom-class="'detail-dialog'">
+      <div v-if="currentRow" class="detail-content">
+        <el-descriptions :column="2" border size="large" style="width: 100%">
+          <el-descriptions-item label="企业编号">{{ currentRow.id }}</el-descriptions-item>
+          <el-descriptions-item label="企业名称">{{ currentRow.companyName }}</el-descriptions-item>
+          <el-descriptions-item label="统一社会信用代码">{{ currentRow.creditCode }}</el-descriptions-item>
+          <el-descriptions-item label="法人">{{ currentRow.legalPerson }}</el-descriptions-item>
+          <el-descriptions-item label="企业地址">{{ currentRow.address }}</el-descriptions-item>
+          <el-descriptions-item label="联系方式">{{ currentRow.phone }}</el-descriptions-item>
+          <el-descriptions-item label="申请时间">{{ currentRow.applyTime }}</el-descriptions-item>
+          <el-descriptions-item label="验证状态">
+            <el-tag 
+              :class="currentRow.status === 'pending' ? 'tag-warning' : 
+                      currentRow.status === 'passed' ? 'tag-success' : 'tag-danger'"
+              size="medium">
+              {{ currentRow.status === 'pending' ? '待审核' : 
+                 currentRow.status === 'passed' ? '已通过' : '已驳回' }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="审核时间" v-if="currentRow.auditTime">{{ currentRow.auditTime }}</el-descriptions-item>
+          <el-descriptions-item label="审核意见" v-if="currentRow.auditOpinion" span="2">
+            {{ currentRow.auditOpinion || '无' }}
+          </el-descriptions-item>
+        </el-descriptions>
+
+        <!-- 企业资质图片展示（替换为可访问的示例图） -->
+        <div class="cert-img-container" v-if="currentRow.certImgs && currentRow.certImgs.length">
+          <h4 class="cert-title">企业资质证明：</h4>
+          <div class="img-list">
+            <el-image
+              v-for="(img, index) in currentRow.certImgs"
+              :key="index"
+              :src="img"
+              fit="contain"
+              style="width: 200px; height: 200px; margin-right: 20px; margin-top: 10px"
+              preview-src-list="currentRow.certImgs">
+              <template #error>
+                <div class="image-placeholder">资质图片</div>
+              </template>
+            </el-image>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="detailDialogVisible = false" size="large">关闭</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 审核弹窗 -->
+    <el-dialog
+      v-model="auditDialogVisible"
+      title="企业验证审核"
+      width="50%"
+      destroy-on-close
+      :close-on-click-modal="false"
+      :custom-class="'audit-dialog'">
+      <div v-if="currentRow" class="audit-content">
+        <el-form :model="auditForm" label-width="80px" size="large">
+          <el-form-item label="审核结果" prop="result">
+            <el-radio-group v-model="auditForm.result">
+              <el-radio label="passed" border size="large">通过</el-radio>
+              <el-radio label="rejected" border size="large">驳回</el-radio>
+            </el-radio-group>
+          </el-form-item>
+          <el-form-item label="审核意见" prop="opinion" v-if="auditForm.result">
+            <el-input
+              v-model="auditForm.opinion"
+              type="textarea"
+              :rows="5"
+              placeholder="请输入审核意见（驳回时必填）"
+              size="large"></el-input>
+          </el-form-item>
+        </el-form>
+      </div>
+      <template #footer>
+        <el-button @click="auditDialogVisible = false" size="large">取消</el-button>
+        <el-button type="primary" @click="handleSubmitAudit" size="large">提交</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, toRefs, computed, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
-import { 
-  addRole, 
-  dataScope, 
-  delRole, 
-  getRole, 
-  listRole, 
-  updateRole, 
-  deptTreeSelect 
-} from "@/api/system/role"
+<script setup lang="ts">
+import { ref, reactive, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
 
-const router = useRouter()
+// 搜索表单：仅保留必要字段，简化逻辑
+const searchForm = reactive({
+  companyName: ''
+});
 
-// 响应式数据
-const roleList = ref([])
-const open = ref(false)
-const loading = ref(true)
-const showSearch = ref(true)
-const ids = ref([])
-const single = ref(true)
-const multiple = ref(true)
-const total = ref(0)
-const title = ref("")
-const showPassword = ref(false)
-const dateRangeStart = ref('')
-const dateRangeEnd = ref('')
-const deptOptions = ref([])
-const openDataScope = ref(false)
-const deptRef = ref(null)
-const selectAll = ref(false)
+// 关键：单独定义下拉框绑定值（直接对应option的value，Element Plus会自动显示对应的label）
+const selectedStatus = ref(''); // 初始为空，下拉框显示占位符
 
-// 数据范围选项
-const dataScopeOptions = ref([
-  { value: "1", label: "全部数据权限" },
-  { value: "2", label: "自定数据权限" },
-  { value: "3", label: "本部门数据权限" },
-  { value: "4", label: "本部门及以下数据权限" },
-  { value: "5", label: "仅本人数据权限" }
-])
-
-// 主数据对象
-const data = reactive({
-  form: {
-    roleId: undefined,
-    roleName: undefined,
-    roleKey: undefined,
-    roleSort: undefined,
-    status: "1",
-    password: undefined,
-    remark: undefined,
-    menuIds: [],
-    deptIds: [],
-    menuCheckStrictly: true,
-    deptCheckStrictly: true,
+// 原始表格数据（替换为可访问的示例图片）
+const originTableData = ref([
+  {
+    id: 'ENT001',
+    companyName: '北京字节跳动科技有限公司',
+    creditCode: '911101085923662400',
+    legalPerson: '张一鸣',
+    address: '北京市海淀区中关村软件园',
+    phone: '010-12345678',
+    applyTime: '2025-12-01 10:20:30',
+    status: 'pending',
+    auditTime: '',
+    auditOpinion: '',
+    certImgs: [
+      'https://picsum.photos/400/300?random=1',
+      'https://picsum.photos/400/300?random=2'
+    ]
   },
-  queryParams: {
-    pageNum: 1,
-    pageSize: 10,
-    roleName: undefined,
-    roleKey: undefined
+  {
+    id: 'ENT002',
+    companyName: '深圳市腾讯计算机系统有限公司',
+    creditCode: '91440300708461136T',
+    legalPerson: '马化腾',
+    address: '广东省深圳市南山区腾讯大厦',
+    phone: '0755-83765566',
+    applyTime: '2025-12-02 14:30:20',
+    status: 'passed',
+    auditTime: '2025-12-02 16:00:00',
+    auditOpinion: '资料齐全，审核通过',
+    certImgs: []
   },
-  rules: {
-    roleName: [{ required: true, message: "姓名不能为空", trigger: "blur" }],
-    roleKey: [{ required: true, message: "部门不能为空", trigger: "blur" }],
-    roleSort: [{ required: true, message: "年龄不能为空", trigger: "blur" }]
+  {
+    id: 'ENT003',
+    companyName: '阿里巴巴（中国）有限公司',
+    creditCode: '91330100768225698A',
+    legalPerson: '张勇',
+    address: '浙江省杭州市余杭区文一西路969号',
+    phone: '0571-85022088',
+    applyTime: '2025-12-03 09:15:10',
+    status: 'rejected',
+    auditTime: '2025-12-03 10:00:00',
+    auditOpinion: '资质证明模糊，驳回重新提交',
+    certImgs: []
   },
-})
-
-const { queryParams, form, rules } = toRefs(data)
-
-// 计算属性
-const dateRange = computed(() => {
-  if (dateRangeStart.value && dateRangeEnd.value) {
-    return [dateRangeStart.value, dateRangeEnd.value]
+  {
+    id: 'ENT004',
+    companyName: '百度在线网络技术（北京）有限公司',
+    creditCode: '91110000802100433B',
+    legalPerson: '李彦宏',
+    address: '北京市海淀区百度科技园',
+    phone: '010-59928888',
+    applyTime: '2025-12-04 11:20:00',
+    status: 'pending',
+    auditTime: '',
+    auditOpinion: '',
+    certImgs: []
   }
-  return []
-})
+]);
 
-/** 查询角色列表 */
-function getList() {
-  loading.value = true
-  const params = { ...queryParams.value }
-  if (dateRangeStart.value) params.startTime = dateRangeStart.value
-  if (dateRangeEnd.value) params.endTime = dateRangeEnd.value
-  
-  listRole(params).then(response => {
-    roleList.value = response.rows || []
-    total.value = response.total || 0
-    loading.value = false
-  }).catch(() => {
-    loading.value = false
-  })
-}
+// 表格数据（用于展示和筛选）
+const tableData = ref([...originTableData.value]);
 
-/** 搜索按钮操作 */
-function handleQuery() {
-  queryParams.value.pageNum = 1
-  getList()
-}
+// 分页参数
+const currentPage = ref(1);
+const pageSize = ref(10);
+const total = ref(tableData.value.length);
 
-/** 重置按钮操作 */
-function resetQuery() {
-  dateRangeStart.value = ''
-  dateRangeEnd.value = ''
-  queryParams.value.roleName = ''
-  queryParams.value.roleKey = ''
-  handleQuery()
-}
+// 弹窗相关
+const detailDialogVisible = ref(false);
+const auditDialogVisible = ref(false);
+const currentRow = ref<any>(null);
 
-/** 切换搜索显示 */
-function toggleSearch() {
-  showSearch.value = !showSearch.value
-}
+// 审核表单
+const auditForm = reactive({
+  result: '',
+  opinion: ''
+});
 
-/** 全选/取消全选 */
-function toggleSelectAll() {
-  if (selectAll.value) {
-    ids.value = roleList.value.map(role => role.roleId)
-  } else {
-    ids.value = []
+// 生命周期 - 页面加载
+onMounted(() => {
+  // 可在此处调用接口获取数据
+});
+
+// 搜索事件：直接使用selectedStatus的值进行筛选
+const handleSearch = () => {
+  const filteredData = originTableData.value.filter(item => {
+    const nameMatch = item.companyName.includes(searchForm.companyName);
+    const statusMatch = selectedStatus.value ? item.status === selectedStatus.value : true;
+    return nameMatch && statusMatch;
+  });
+  tableData.value = filteredData;
+  total.value = filteredData.length;
+  currentPage.value = 1;
+};
+
+// 重置事件：清空所有筛选条件
+const handleReset = () => {
+  searchForm.companyName = '';
+  selectedStatus.value = ''; // 重置下拉框为初始状态（显示占位符）
+  tableData.value = [...originTableData.value];
+  total.value = tableData.value.length;
+  currentPage.value = 1;
+};
+
+// 分页 - 当前页改变
+const handleCurrentChange = (val: number) => {
+  currentPage.value = val;
+};
+
+// 查看详情
+const handleDetail = (row: any) => {
+  currentRow.value = { ...row };
+  detailDialogVisible.value = true;
+};
+
+// 审核操作
+const handleAudit = (row: any) => {
+  currentRow.value = { ...row };
+  auditForm.result = '';
+  auditForm.opinion = '';
+  auditDialogVisible.value = true;
+};
+
+// 提交审核
+const handleSubmitAudit = () => {
+  if (!auditForm.result) {
+    ElMessage.warning('请选择审核结果');
+    return;
   }
-  handleSelectionChange()
-}
-
-/** 清除选择 */
-function clearSelection() {
-  ids.value = []
-  selectAll.value = false
-  handleSelectionChange()
-}
-
-/** 批量删除 */
-function handleBatchDelete() {
-  if (ids.value.length === 0) return
-  
-  if (confirm(`确定要删除选中的 ${ids.value.length} 个员工吗？`)) {
-    delRole(ids.value.join(',')).then(() => {
-      alert('删除成功！')
-      getList()
-      clearSelection()
-    }).catch(err => {
-      alert('删除失败：' + err.message)
-    })
-  }
-}
-
-/** 删除按钮操作 */
-function handleDelete(row) {
-  const roleIds = row.roleId || ids.value.join(',')
-  if (confirm(`确定要删除员工号 "${roleIds}" 的数据吗？`)) {
-    delRole(roleIds).then(() => {
-      alert('删除成功！')
-      getList()
-      clearSelection()
-    }).catch(err => {
-      alert('删除失败：' + err.message)
-    })
-  }
-}
-
-/** 导出按钮操作 */
-function handleExport() {
-  alert('导出功能需要后端API支持')
-  // 实际使用时调用后端导出接口
-  // proxy.download("system/role/export", { ...queryParams.value }, `employee_${new Date().getTime()}.xlsx`)
-}
-
-/** 多选框选中数据 */
-function handleSelectionChange() {
-  single.value = ids.value.length !== 1
-  multiple.value = ids.value.length === 0
-  selectAll.value = ids.value.length === roleList.value.length && roleList.value.length > 0
-}
-
-/** 重置表单 */
-function reset() {
-  form.value = {
-    roleId: undefined,
-    roleName: undefined,
-    roleKey: undefined,
-    roleSort: undefined,
-    status: "1",
-    password: undefined,
-    remark: undefined,
-    menuIds: [],
-    deptIds: [],
-    menuCheckStrictly: true,
-    deptCheckStrictly: true,
-  }
-}
-
-/** 添加角色 */
-function handleAdd() {
-  reset()
-  open.value = true
-  title.value = "员工添加"
-}
-
-/** 修改角色 */
-function handleUpdate(row) {
-  reset()
-  const roleId = row.roleId
-  getRole(roleId).then(response => {
-    form.value = response.data || {}
-    form.value.roleSort = Number(form.value.roleSort)
-    open.value = true
-    title.value = "员工修改"
-  }).catch(() => {
-    alert('获取员工信息失败')
-  })
-}
-
-/** 提交按钮 */
-function submitForm() {
-  // 前端校验
-  if (!form.value.roleName?.trim()) {
-    alert('姓名不能为空！')
-    return
-  }
-  if (!form.value.roleKey?.trim()) {
-    alert('部门不能为空！')
-    return
-  }
-  if (!form.value.roleSort || form.value.roleSort < 18 || form.value.roleSort > 65) {
-    alert('年龄需为18-65的数字！')
-    return
-  }
-  if (!form.value.roleId && !form.value.password) {
-    alert('新增员工必须设置密码！')
-    return
+  if (auditForm.result === 'rejected' && !auditForm.opinion) {
+    ElMessage.warning('驳回时请输入审核意见');
+    return;
   }
 
-  if (form.value.roleId != undefined) {
-    // 更新
-    updateRole(form.value).then(response => {
-      alert('修改成功！')
-      open.value = false
-      getList()
-    }).catch(err => {
-      alert('修改失败：' + err.message)
-    })
-  } else {
-    // 新增
-    addRole(form.value).then(response => {
-      alert('新增成功！')
-      open.value = false
-      getList()
-    }).catch(err => {
-      alert('新增失败：' + err.message)
-    })
+  // 同时更新表格数据和原始数据
+  const tableIndex = tableData.value.findIndex(item => item.id === currentRow.value.id);
+  if (tableIndex > -1) {
+    tableData.value[tableIndex].status = auditForm.result;
+    tableData.value[tableIndex].auditTime = new Date().toLocaleString();
+    tableData.value[tableIndex].auditOpinion = auditForm.opinion;
   }
-}
 
-/** 取消按钮 */
-function cancel() {
-  open.value = false
-  reset()
-}
-
-/** 上一页 */
-function prevPage() {
-  if (queryParams.value.pageNum > 1) {
-    queryParams.value.pageNum--
-    getList()
+  const originIndex = originTableData.value.findIndex(item => item.id === currentRow.value.id);
+  if (originIndex > -1) {
+    originTableData.value[originIndex].status = auditForm.result;
+    originTableData.value[originIndex].auditTime = new Date().toLocaleString();
+    originTableData.value[originIndex].auditOpinion = auditForm.opinion;
   }
-}
 
-/** 下一页 */
-function nextPage() {
-  const totalPages = Math.ceil(total.value / queryParams.value.pageSize)
-  if (queryParams.value.pageNum < totalPages) {
-    queryParams.value.pageNum++
-    getList()
-  }
-}
-
-// 初始化
-getList()
+  ElMessage.success('审核提交成功');
+  auditDialogVisible.value = false;
+};
 </script>
 
 <style scoped>
-/* 复用代码一的基础样式 */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-}
-
-.employee-container {
+/* 全局容器：设置基础字体大小，作为页面字体基准 */
+.enterprise-verify-container {
+  background-color: #f5f5f7;
   min-height: 100vh;
-  background-color: #f5f7fa;
+  font-family: "Microsoft Yahei", sans-serif;
+  font-size: 16px; /* 基础字体增大，子元素会继承 */
 }
 
-/* 导航栏 */
-.navbar {
-  display: flex;
-  justify-content: center;
-  padding: 1rem 2rem;
+/* 品牌头部 - 增大字体，调整间距 */
+.brand-header {
   background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  padding: 16px 24px; /* 增大内边距，配合字体大小 */
+  border-bottom: 1px solid #eee;
 }
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.logo i {
-  font-size: 1.8rem;
-  color: #1890ff;
-}
-
-.navbar-brand h1 {
-  font-size: 1.5rem;
-  color: #2c3e50;
-  font-weight: 700;
-}
-
-/* 主内容区域 */
-.main-content {
-  padding: 1.5rem;
-  max-width: 1400px;
-  margin: 0 auto;
-}
-
-/* 页面标题 */
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.5rem;
-}
-
-.page-title {
-  font-size: 1.8rem;
-  color: #2c3e50;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-
-.page-subtitle {
-  font-size: 1rem;
-  color: #7f8c8d;
-}
-
-.actions {
-  display: flex;
-  gap: 1rem;
-}
-
-/* 按钮样式 */
-.btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
-  border: none;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-size: 0.85rem;
-}
-
-.btn-primary {
-  background-color: #1890ff;
-  color: #fff;
-}
-
-.btn-primary:hover {
-  background-color: #40a9ff;
-  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
-}
-
-.btn-outline {
-  background-color: transparent;
-  border: 1px solid #d9d9d9;
-  color: #595959;
-}
-
-.btn-outline:hover {
-  border-color: #1890ff;
-  color: #1890ff;
-}
-
-.btn-outline.delete {
-  color: #ff4d4f;
-  border-color: #ff4d4f;
-}
-
-.btn-outline.delete:hover {
-  background-color: #fff2f0;
-}
-
-/* 查询卡片 */
-.query-card {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  margin-bottom: 1.5rem;
-}
-
-.query-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.query-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  min-width: 180px;
-  flex: 1;
-  max-width: 300px;
-}
-
-.query-label {
-  font-size: 0.9rem;
-  color: #2c3e50;
-  font-weight: 500;
-}
-
-.query-input, .query-select {
-  padding: 0.6rem 1rem;
-  border: 1px solid #d9d9d9;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  transition: border-color 0.3s;
-}
-
-.query-input:focus, .query-select:focus {
-  outline: none;
-  border-color: #1890ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
-}
-
-.date-range-picker {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.date-separator {
-  color: #8c8c8c;
-  font-size: 0.85rem;
-}
-
-.query-actions {
-  display: flex;
-  gap: 0.75rem;
-  margin-left: auto;
-  margin-bottom: 0.6rem;
-}
-
-/* 批量操作 */
-.batch-actions {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem;
-  background-color: #f0f7ff;
-  border-radius: 6px;
-  margin-bottom: 1rem;
-}
-
-.batch-info {
-  font-size: 0.9rem;
-  color: #1890ff;
-  font-weight: 500;
-}
-
-/* 内容卡片 */
-.content-card {
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-}
-
-/* 表格样式 */
-.table-container {
-  overflow-x: auto;
-}
-
-.employee-table {
-  width: 100%;
-  border-collapse: collapse;
-  min-width: 800px;
-}
-
-.employee-table th {
-  background-color: #fafafa;
-  padding: 1rem;
-  text-align: left;
-  font-size: 0.9rem;
-  color: #2c3e50;
+.brand-header h1 {
+  font-size: 28px; /* 进一步增大品牌名称字体 */
   font-weight: 600;
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.employee-table td {
-  padding: 1rem;
-  border-bottom: 1px solid #e8e8e8;
-  font-size: 0.85rem;
-  color: #595959;
-}
-
-.employee-table tr:hover {
-  background-color: #fafafa;
-}
-
-/* 表格单元格样式 */
-.selection-col {
-  width: 50px;
+  color: #333;
+  margin: 0;
   text-align: center;
 }
 
-.employee-id {
-  font-family: 'Courier New', monospace;
-  color: #1890ff;
+/* 页面标题栏 - 增大标题和副标题字体 */
+.page-title-bar {
+  padding: 24px 24px; /* 增大内边距 */
+  background-color: #fff;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #eee;
+}
+.page-title-bar h2 {
+  font-size: 26px; /* 增大页面标题字体 */
   font-weight: 600;
+  color: #333;
+  margin: 0 0 8px 0; /* 增加与副标题的间距 */
+}
+.page-title-bar .sub-title {
+  font-size: 18px; /* 增大副标题字体 */
+  color: #999;
+  margin: 0;
 }
 
-.employee-name {
+/* 搜索筛选卡片：增大表单元素字体和间距 */
+.search-filter-card {
+  background-color: #fff;
+  padding: 20px 24px; /* 增大内边距 */
+  margin: 0 24px 16px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.search-form {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 16px; /* 增加表单元素之间的间距 */
 }
-
-.avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: #1890ff;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.position-badge {
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
+/* 增大表单标签字体 */
+:deep(.el-form-item__label) {
+  font-size: 17px;
   font-weight: 500;
 }
-
-.position-badge.manager {
-  background-color: #fff7e6;
-  color: #fa8c16;
-  border: 1px solid #ffd591;
+/* 增大输入框、下拉框字体和高度 */
+:deep(.el-input__inner), :deep(.el-select__wrapper) {
+  font-size: 17px;
+  padding: 10px 12px; /* 增大内边距，提升高度 */
+}
+/* 增大按钮字体和尺寸 */
+:deep(.el-button) {
+  font-size: 17px;
+  padding: 10px 20px;
 }
 
-.position-badge.employee {
-  background-color: #f6ffed;
+/* 表格卡片：调整表格内字体和元素大小 */
+.table-card {
+  background-color: #fff;
+  margin: 0 24px 24px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  padding: 20px; /* 增大内边距 */
+}
+/* 增大表格头部字体 */
+:deep(.el-table__header-cell) {
+  font-size: 17px;
+  font-weight: 600;
+}
+/* 增大表格内容字体 */
+:deep(.el-table__cell) {
+  font-size: 16px;
+  padding: 16px 0; /* 增大单元格上下内边距 */
+}
+
+/* 企业名称项：配合字体增大调整头像和文字 */
+.company-name-item {
+  display: flex;
+  align-items: center;
+}
+.name-avatar {
+  background-color: #409eff;
+  color: #fff;
+  margin-right: 12px; /* 增大头像与文字间距 */
+}
+.name-text {
+  font-size: 17px; /* 增大企业名称字体 */
+  color: #333;
+}
+
+/* 状态标签：增大标签字体和尺寸 */
+:deep(.el-tag) {
+  font-size: 16px; /* 增大标签文字 */
+  padding: 6px 12px; /* 增大标签内边距 */
+}
+.tag-warning {
+  background-color: #fff8e1;
+  color: #faad14;
+  border-color: #ffe58f;
+}
+.tag-success {
+  background-color: #f0f9eb;
   color: #52c41a;
-  border: 1px solid #b7eb8f;
+  border-color: #b7eb8f;
+}
+.tag-danger {
+  background-color: #fff1f0;
+  color: #f5222d;
+  border-color: #ffccc7;
 }
 
-/* 操作列 */
-.actions-col {
-  width: 180px;
-}
-
-.actions-cell {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.btn-action {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.8rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  cursor: pointer;
-  border: none;
-  min-width: 60px;
-  justify-content: center;
-  transition: all 0.3s;
-}
-
-.btn-action.edit {
-  background-color: #e6f7ff;
+/* 操作按钮：增大按钮字体 */
+.operate-btn {
   color: #1890ff;
-  border: 1px solid #91d5ff;
+  padding: 0 8px;
+  font-size: 17px; /* 增大操作按钮字体 */
+}
+.audit-btn {
+  color: #52c41a;
 }
 
-.btn-action.edit:hover {
-  background-color: #bae7ff;
-}
-
-.btn-action.delete {
-  background-color: #fff2f0;
-  color: #ff4d4f;
-  border: 1px solid #ffccc7;
-}
-
-.btn-action.delete:hover {
-  background-color: #ffccc7;
-}
-
-/* 空状态 */
-.empty-state {
-  padding: 3rem 2rem;
-  text-align: center;
-  color: #bfbfbf;
-}
-
-.empty-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-  opacity: 0.3;
-}
-
-.empty-state p {
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
-}
-
-.mt-3 {
-  margin-top: 1rem;
-}
-
-/* 分页样式 */
-.pagination {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #e8e8e8;
-}
-
-.pagination-info {
-  font-size: 0.85rem;
-  color: #8c8c8c;
-}
-
-.pagination-controls {
+/* 分页容器：增大分页文字和组件字体 */
+.pagination-container {
   display: flex;
   align-items: center;
-  gap: 1rem;
-}
-
-.pagination-btn {
-  width: 32px;
-  height: 32px;
-  border: 1px solid #d9d9d9;
-  border-radius: 6px;
-  background-color: #fff;
-  color: #595959;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.pagination-btn:hover:not(:disabled) {
-  border-color: #1890ff;
-  color: #1890ff;
-}
-
-.pagination-btn:disabled {
-  background-color: #f5f5f5;
-  color: #bfbfbf;
-  cursor: not-allowed;
-}
-
-.pagination-text {
-  font-size: 0.85rem;
-  color: #595959;
-}
-
-/* 弹窗样式 */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-}
-
-.modal-content {
-  background-color: #fff;
-  border-radius: 8px;
-  width: 100%;
-  max-width: 600px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.25rem 1.5rem;
-  border-bottom: 1px solid #e8e8e8;
-}
-
-.modal-header h3 {
-  font-size: 1.2rem;
-  color: #2c3e50;
-  font-weight: 600;
-}
-
-.close-btn {
-  background: none;
-  border: none;
-  font-size: 1.1rem;
-  color: #8c8c8c;
-  cursor: pointer;
-  padding: 0.4rem;
-  border-radius: 4px;
-  transition: all 0.3s;
-}
-
-.close-btn:hover {
-  background-color: #f5f5f5;
-  color: #595959;
-}
-
-.modal-body {
-  padding: 1.5rem;
-}
-
-/* 表单样式 */
-.employee-form {
-  margin-bottom: 0;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.form-label {
-  font-size: 0.9rem;
-  color: #2c3e50;
-  font-weight: 500;
-}
-
-.form-label.required::after {
-  content: '*';
-  color: #ff4d4f;
-  margin-left: 4px;
-}
-
-.form-input, .form-select {
-  padding: 0.6rem 1rem;
-  border: 1px solid #d9d9d9;
-  border-radius: 6px;
-  font-size: 0.85rem;
-  transition: all 0.3s;
-}
-
-.form-input:focus, .form-select:focus {
-  outline: none;
-  border-color: #1890ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
-}
-
-.password-input {
-  position: relative;
-}
-
-.password-toggle {
-  position: absolute;
-  right: 0.5rem;
-  top: 50%;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  color: #8c8c8c;
-  cursor: pointer;
-  padding: 0.25rem;
-}
-
-.password-toggle:hover {
-  color: #595959;
-}
-
-.form-actions {
-  display: flex;
-  gap: 1rem;
   justify-content: flex-end;
-  margin-top: 2rem;
+  margin-top: 20px; /* 增大上边距 */
+  font-size: 17px; /* 增大分页文字字体 */
+  color: #666;
+}
+.total-count {
+  margin-right: 16px;
+}
+/* 增大分页组件字体 */
+:deep(.el-pagination) {
+  font-size: 17px;
 }
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .navbar {
-    padding: 1rem;
-  }
+/* 详情弹窗：增大弹窗内字体 */
+.detail-dialog {
+  font-size: 17px; /* 弹窗基础字体 */
+}
+.detail-dialog .el-dialog__body {
+  padding: 24px; /* 增大弹窗内边距 */
+}
+.cert-title {
+  font-size: 18px; /* 增大资质标题字体 */
+  font-weight: 500;
+  color: #333;
+  margin: 20px 0 12px 0; /* 调整间距 */
+}
+.image-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  color: #999;
+  font-size: 16px; /* 增大占位符字体 */
+}
 
-  .main-content {
-    padding: 1rem;
-  }
-
-  .page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .query-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .query-group {
-    max-width: 100%;
-  }
-
-  .query-actions {
-    margin-left: 0;
-    width: 100%;
-    justify-content: flex-end;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-  }
-
-  .batch-actions {
-    flex-wrap: wrap;
-  }
-
-  .actions-cell {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .btn-action {
-    min-width: 100%;
-  }
-
-  .pagination {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .modal-content {
-    margin: 0.5rem;
-  }
+/* 审核弹窗：增大弹窗内字体 */
+.audit-dialog {
+  font-size: 17px; /* 弹窗基础字体 */
+}
+.audit-dialog .el-dialog__body {
+  padding: 24px; /* 增大弹窗内边距 */
+}
+/* 增大单选框字体 */
+:deep(.el-radio__label) {
+  font-size: 17px;
+}
+/* 增大文本域字体 */
+:deep(.el-textarea__inner) {
+  font-size: 17px;
 }
 </style>
-
-<!-- 引入Font Awesome图标库 -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
