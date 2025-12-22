@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.ruoyi.CRM.DTO.CustomerDTO;
 import com.ruoyi.CRM.domain.NCustomer;
+import com.ruoyi.common.core.page.TableDataInfo;
 
 /**
  * 【请填写功能名称】Service接口
@@ -60,4 +61,6 @@ public interface INCustomerService
      * @return 结果
      */
     public int deleteNCustomerById(Long id);
+
+    List<NCustomer> getMember(Long userId);
 }

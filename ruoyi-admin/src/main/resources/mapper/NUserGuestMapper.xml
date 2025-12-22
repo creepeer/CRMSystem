@@ -88,4 +88,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{id}
         </foreach>
     </delete>
+    <select id="selectNUserGuestsById" parameterType="Long" resultMap="NUserGuestResult">
+        <include refid="selectNUserGuestVo"/>
+        where user_id = #{userId}
+    </select>
+
 </mapper>

@@ -58,4 +58,6 @@ public interface NUserGuestMapper
      * @return 结果
      */
     public int deleteNUserGuestByIds(Long[] ids);
+
+    List<NUserGuest> selectNUserGuestsById(Long userId);
 }

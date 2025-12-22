@@ -1,12 +1,12 @@
 package com.ruoyi.CRM.service.impl;
 
-import java.util.Date;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import com.ruoyi.CRM.DTO.CustomerDTO;
 import com.ruoyi.CRM.domain.NUserGuest;
 import com.ruoyi.CRM.mapper.NUserGuestMapper;
+import com.ruoyi.common.core.page.TableDataInfo;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -114,5 +114,24 @@ public class NCustomerServiceImpl implements INCustomerService
     public int deleteNCustomerById(Long id)
     {
         return nCustomerMapper.deleteNCustomerById(id);
+    }
+    @Override
+    public List<NCustomer> getMember(Long userId){
+        // 1. 查询用户关联的客户关系
+        List<NUserGuest> nUserGuests = nUserGuestMapper.selectNUserGuestsById(userId);
+
+
+        // 2. 提取所有客户ID
+        List<Long> customerIds = nUserGuests.stream()
+                .map(NUserGuest::getCustomerId)
+                .filter(Objects::nonNull)
+                .distinct()
+                .collect(Collectors.toList());
+
+
+        // 3. 批量查询客户详细信息
+        List<NCustomer> customers = nCustomerMapper.selectNCustomerByIds(customerIds);
+
+        return customers;
     }
 }

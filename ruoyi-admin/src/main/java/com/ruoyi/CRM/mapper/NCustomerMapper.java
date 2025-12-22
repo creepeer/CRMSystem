@@ -58,4 +58,5 @@ public interface NCustomerMapper
      * @return 结果
      */
     public int deleteNCustomerByIds(Long[] ids);
+    List<NCustomer> selectNCustomerByIds(List<Long> ids);
 }

@@ -63,7 +63,6 @@ public class UserController extends BaseController
     public TableDataInfo list(SysUser user)
     {
         startPage();
-        System.out.println("user1:"+user);
         List<SysUser> list = userService.selectUserList(user);
         return getDataTable(list);
     }
@@ -128,7 +127,6 @@ public class UserController extends BaseController
     @PostMapping("/add")
     public AjaxResult add(@Validated @RequestBody UserDTO userDTO)
     {
-//        deptService.checkDeptDataScope(userAdd.getDeptId());
         SysUser user=new SysUser();
         user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword());
@@ -164,10 +162,6 @@ public class UserController extends BaseController
     @PutMapping("/update")
     public AjaxResult edit(@Validated @RequestBody UserDTO userDTO)
     {
-//        userService.checkUserAllowed(user);
-//        userService.checkUserDataScope(user.getUserId());
-//        deptService.checkDeptDataScope(user.getDeptId());
-//        roleService.checkRoleDataScope(user.getRoleIds());
         SysUser user=userService.selectUserById(userDTO.getUserId());
         user.setEmail(userDTO.getEmail());
         if(userDTO.getPassword()!=null) {
@@ -276,4 +270,6 @@ public class UserController extends BaseController
     {
         return success(deptService.selectDeptTreeList(dept));
     }
+
+
 }
