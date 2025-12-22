@@ -1,6 +1,9 @@
 package com.ruoyi.CRM.controller;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ruoyi.CRM.DTO.CustomerDTO;
@@ -38,9 +41,9 @@ public class NCustomerController extends BaseController
     private INCustomerService nCustomerService;
 
     /**
-     * 查询【请填写功能名称】列表
+     * 查询【客户管理】列表
      */
-    @PreAuthorize("@ss.hasPermi('system:customer:list')")
+    @PreAuthorize("@ss.hasPermi('customer:list')")
     @GetMapping("/list")
     public TableDataInfo list(NCustomer nCustomer)
     {
@@ -52,8 +55,8 @@ public class NCustomerController extends BaseController
     /**
      * 导出【请填写功能名称】列表
      */
-    @PreAuthorize("@ss.hasPermi('system:customer:export')")
-    @Log(title = "【请填写功能名称】", businessType = BusinessType.EXPORT)
+    @PreAuthorize("@ss.hasPermi('customer:export')")
+    @Log(title = "【客户管理导出】", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     public void export(HttpServletResponse response, NCustomer nCustomer)
     {
@@ -63,9 +66,9 @@ public class NCustomerController extends BaseController
     }
 
     /**
-     * 获取【请填写功能名称】详细信息
+     * 获取【查询客户byId】详细信息
      */
-    @PreAuthorize("@ss.hasPermi('system:customer:query')")
+    @PreAuthorize("@ss.hasPermi('customer:query')")
     @GetMapping(value = "/{id}")
     public AjaxResult getInfo(@PathVariable("id") Long id)
     {
@@ -73,25 +76,29 @@ public class NCustomerController extends BaseController
     }
 
     /**
-     * 新增【请填写功能名称】
+     * 新增【查询客户b】
      */
-    @PreAuthorize("@ss.hasPermi('system:customer:add')")
-    @Log(title = "【请填写功能名称】", businessType = BusinessType.INSERT)
+    @PreAuthorize("@ss.hasPermi('customer:add')")
+    @Log(title = "【客户添加】", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     public AjaxResult add(@RequestBody CustomerDTO customerDTO)
     {
         NCustomer customer=new NCustomer();
         BeanUtils.copyProperties(customerDTO,customer);
+        customer.setTenantId(getTenantId());
+        String customerCode = "CUST-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
+        customer.setcCode(customerCode);
+        customer.setCreatedBy(getUserId());
+        customer.setCreatedAt(new Date());
         System.out.println(customer);
-//        return toAjax(nCustomerService.insertNCustomer(customer));
-        return toAjax(1);
+        return toAjax(nCustomerService.insertNCustomer(customer));
     }
 
     /**
      * 修改【请填写功能名称】
      */
-    @PreAuthorize("@ss.hasPermi('system:customer:edit')")
-    @Log(title = "【请填写功能名称】", businessType = BusinessType.UPDATE)
+    @PreAuthorize("@ss.hasPermi('customer:edit')")
+    @Log(title = "【客户更新】", businessType = BusinessType.UPDATE)
     @PutMapping("/update")
     public AjaxResult edit(@RequestBody NCustomer nCustomer)
     {
@@ -101,8 +108,8 @@ public class NCustomerController extends BaseController
     /**
      * 删除【请填写功能名称】
      */
-    @PreAuthorize("@ss.hasPermi('system:customer:remove')")
-    @Log(title = "【请填写功能名称】", businessType = BusinessType.DELETE)
+    @PreAuthorize("@ss.hasPermi('customer:remove')")
+    @Log(title = "【客户删除】", businessType = BusinessType.DELETE)
 	@DeleteMapping("/{ids}")
     public AjaxResult remove(@PathVariable Long[] ids)
     {
