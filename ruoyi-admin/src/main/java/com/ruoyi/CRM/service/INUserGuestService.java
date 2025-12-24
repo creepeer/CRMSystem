@@ -58,4 +58,12 @@ public interface INUserGuestService
      * @return 结果
      */
     public int deleteNUserGuestById(Long id);
+
+    /**
+     * 根据客户ID查询关联记录
+     * 
+     * @param customerId 客户ID
+     * @return 客户-员工关联
+     */
+    public NUserGuest selectNUserGuestByCustomerId(Long customerId);
 }
