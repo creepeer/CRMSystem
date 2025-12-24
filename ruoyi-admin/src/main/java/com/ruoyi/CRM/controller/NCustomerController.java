@@ -8,6 +8,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.ruoyi.CRM.DTO.CustomerDTO;
 import com.ruoyi.CRM.DTO.GetCustomerListDTO;
+import com.ruoyi.CRM.domain.NUserGuest;
+import com.ruoyi.CRM.service.INUserGuestService;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,8 +41,14 @@ import com.ruoyi.common.core.page.TableDataInfo;
 @RequestMapping("/customer")
 public class NCustomerController extends BaseController
 {
-    @Autowired
-    private INCustomerService nCustomerService;
+    private final INCustomerService inCustomerService;
+
+    private final INUserGuestService inUserGuestService;
+
+    public NCustomerController(INCustomerService inCustomerService,INUserGuestService inUserGuestService){
+        this.inCustomerService= inCustomerService;
+        this.inUserGuestService= inUserGuestService;
+    }
 
     /**
      * 查询【客户管理】列表
@@ -50,7 +58,7 @@ public class NCustomerController extends BaseController
     public TableDataInfo list(NCustomer nCustomer)
     {
         startPage();
-        List<GetCustomerListDTO> list = nCustomerService.selectNCustomerList(nCustomer);
+        List<GetCustomerListDTO> list = inCustomerService.selectNCustomerList(nCustomer);
         return getDataTable(list);
     }
 
@@ -66,7 +74,7 @@ public class NCustomerController extends BaseController
     @GetMapping(value = "/{id}")
     public AjaxResult getInfo(@PathVariable("id") Long id)
     {
-        return success(nCustomerService.selectNCustomerById(id));
+        return success(inCustomerService.selectNCustomerById(id));
     }
 
     /**
@@ -78,21 +86,32 @@ public class NCustomerController extends BaseController
     public AjaxResult add(@RequestBody CustomerDTO customerDTO)
     {
 
-        return toAjax(nCustomerService.insertNCustomer(customerDTO,getTenantId(),getUserId()));
+        return toAjax(inCustomerService.insertNCustomer(customerDTO,getTenantId(),getUserId()));
     }
 
     /**
-     * 修改【请填写功能名称】
+     * 修改客户信息
      */
     @PreAuthorize("@ss.hasPermi('customer:edit')")
     @Log(title = "【客户更新】", businessType = BusinessType.UPDATE)
     @PutMapping("/update")
     public AjaxResult edit(@RequestBody CustomerDTO customerDTO)
     {
-        NCustomer customer=new NCustomer();
-        BeanUtils.copyProperties(customerDTO,customer);
-//        return toAjax(1);
-        return toAjax(nCustomerService.updateNCustomer(customer));
+        // 1. 更新客户基本信息
+        NCustomer customer = new NCustomer();
+        BeanUtils.copyProperties(customerDTO, customer);
+        
+        // 2. 更新负责人关联（如果传了userId）
+        if (customerDTO.getUserId() != null && customerDTO.getId() != null) {
+            NUserGuest guest = inUserGuestService.selectNUserGuestByCustomerId(customerDTO.getId());
+            if (guest != null) {
+                guest.setUserId(customerDTO.getUserId());
+                guest.setUpdatedAt(new Date());
+                inUserGuestService.updateNUserGuest(guest);
+            }
+        }
+        
+        return toAjax(inCustomerService.updateNCustomer(customer));
     }
 
     /**
@@ -103,7 +122,7 @@ public class NCustomerController extends BaseController
     @DeleteMapping("/{ids}")
     public AjaxResult remove(@PathVariable Long[] ids)
     {
-        return toAjax(nCustomerService.deleteNCustomerByIds(ids));
+        return toAjax(inCustomerService.deleteNCustomerByIds(ids));
     }
 
     /**
@@ -113,7 +132,7 @@ public class NCustomerController extends BaseController
     @GetMapping("/getmember/{userId}")
     public TableDataInfo getMember(@PathVariable Long userId)
     {
-        List<NCustomer> list = nCustomerService.getMember(userId);
+        List<NCustomer> list = inCustomerService.getMember(userId);
         return getDataTable(list);
     }
 }
