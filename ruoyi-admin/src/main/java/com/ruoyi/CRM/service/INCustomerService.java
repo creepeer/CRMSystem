@@ -3,6 +3,7 @@ package com.ruoyi.CRM.service;
 import java.util.List;
 
 import com.ruoyi.CRM.DTO.CustomerDTO;
+import com.ruoyi.CRM.DTO.GetCustomerListDTO;
 import com.ruoyi.CRM.domain.NCustomer;
 import com.ruoyi.common.core.page.TableDataInfo;
 
@@ -28,7 +29,7 @@ public interface INCustomerService
      * @param nCustomer 【请填写功能名称】
      * @return 【请填写功能名称】集合
      */
-    public List<NCustomer> selectNCustomerList(NCustomer nCustomer);
+    public List<GetCustomerListDTO> selectNCustomerList(NCustomer nCustomer);
 
     /**
      * 新增【请填写功能名称】

@@ -92,5 +92,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectNUserGuestVo"/>
         where user_id = #{userId}
     </select>
+    <select id="selectNUserGuestByCustomerId" parameterType="Long" resultMap="NUserGuestResult">
+        <include refid="selectNUserGuestVo"/>
+        where customer_id = #{customerId}
+    </select>
+
 
 </mapper>

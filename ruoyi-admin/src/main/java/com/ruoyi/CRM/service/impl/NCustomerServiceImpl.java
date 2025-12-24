@@ -4,11 +4,15 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import com.ruoyi.CRM.DTO.CustomerDTO;
+import com.ruoyi.CRM.DTO.GetCustomerListDTO;
 import com.ruoyi.CRM.domain.NUserGuest;
 import com.ruoyi.CRM.mapper.NUserGuestMapper;
+import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.common.core.page.TableDataInfo;
+import com.ruoyi.system.mapper.SysUserMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import com.ruoyi.CRM.mapper.NCustomerMapper;
 import com.ruoyi.CRM.domain.NCustomer;
@@ -27,6 +31,8 @@ public class NCustomerServiceImpl implements INCustomerService
     private NCustomerMapper nCustomerMapper;
     @Autowired
     private NUserGuestMapper nUserGuestMapper;
+    @Autowired
+    private SysUserMapper userMapper;
 
     /**
      * 查询【请填写功能名称】
@@ -47,9 +53,23 @@ public class NCustomerServiceImpl implements INCustomerService
      * @return 【请填写功能名称】
      */
     @Override
-    public List<NCustomer> selectNCustomerList(NCustomer nCustomer)
+    public List<GetCustomerListDTO> selectNCustomerList(NCustomer nCustomer)
     {
-        return nCustomerMapper.selectNCustomerList(nCustomer);
+        List<NCustomer> nCustomerList = nCustomerMapper.selectNCustomerList(nCustomer);
+        List<GetCustomerListDTO> customerDTOList = new ArrayList<>();
+
+        for (NCustomer nCustomerItem : nCustomerList) {
+            GetCustomerListDTO dto = new GetCustomerListDTO();
+            BeanUtils.copyProperties(nCustomerItem, dto);
+            customerDTOList.add(dto);
+            NUserGuest nUserGuest=nUserGuestMapper.selectNUserGuestByCustomerId(dto.getId());
+            Long userId=nUserGuest.getUserId();
+            dto.setUserid(userId);
+            SysUser sysUser=userMapper.selectUserById(userId);
+            dto.setUsername(sysUser.getUserName());
+
+        }
+        return customerDTOList;
     }
 
     /**
