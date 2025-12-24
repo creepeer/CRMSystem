@@ -662,60 +662,7 @@ export default {
       currentDetailCustomer: {},
       
       // 客户列表数据
-      customers: [
-        { 
-          id: 1,
-          name: '张三',
-          age: 30,
-          contact: '13800138000',
-          status: 'active',
-          createTime: '2024-10-22 09:30',
-          address: '浙江省杭州市西湖区',
-          teamId: 103,
-          userId: 1006,
-          email: 'zhangsan@example.com',
-          remark: '重要客户'
-        },
-        { 
-          id: 'CUST002', 
-          name: '李四', 
-          age: 44, 
-          contact: '2222223', 
-          status: 'vip', 
-          createTime: '2024-10-23 14:15',
-          address: '上海市浦东新区',
-          teamId: 102,
-          userId: 1002,
-          email: 'lisi@example.com',
-          remark: '长期客户'
-        },
-        { 
-          id: 'CUST003', 
-          name: '王五', 
-          age: 26, 
-          contact: '2222224', 
-          status: 'active', 
-          createTime: '2024-10-23 16:20',
-          address: '广州市天河区',
-          teamId: 101,
-          userId: 1001,
-          email: 'wangwu@example.com',
-          remark: '暂无'
-        },
-        { 
-          id: 'CUST004', 
-          name: '赵六', 
-          age: 43, 
-          contact: '2222225', 
-          status: 'inactive', 
-          createTime: '2024-10-24 10:10',
-          address: '深圳市南山区',
-          teamId: 103,
-          userId: 1006,
-          email: 'zhaoliu@example.com',
-          remark: '已流失'
-        }
-      ],
+      customers: [],
       
       // Excel导入相关
       selectedFile: null,
@@ -759,37 +706,62 @@ export default {
     // 获取团队和员工列表
     async getTeamAndStaffList() {
       try {
-        // 模拟数据
-        this.teamList = [
-          { id: 101, name: '销售一组' },
-          { id: 102, name: '销售二组' },
-          { id: 103, name: '销售三组' },
-          { id: 104, name: '技术支持组' },
-          { id: 105, name: '客服组' }
-        ];
-        this.staffList = [
-          { id: 1001, name: '员工一', teamId: 101 },
-          { id: 1002, name: '员工二', teamId: 102 },
-          { id: 1003, name: '员工三', teamId: 103 },
-          { id: 1006, name: '接口员工', teamId: 103 }
-        ];
+        // 获取团队列表 - 从 company/teams/list 接口
+        const teamResponse = await request.get('/company/teams/list');
+        console.log('团队接口响应:', teamResponse);
+        
+        if (teamResponse.code === 200 && teamResponse.data && Array.isArray(teamResponse.data)) {
+          // 根据您提供的接口数据结构，团队信息在data数组中
+          this.teamList = teamResponse.data.map(item => ({
+            id: item.deptId, // 使用deptId作为团队ID
+            name: item.deptName // 使用deptName作为团队名称
+          }));
+          console.log('处理后的团队列表:', this.teamList);
+        } else {
+          this.teamList = [];
+          console.warn('获取团队列表失败或数据格式不正确');
+        }
+        
+        // 获取员工列表 - 从 company/staff/list 接口（和负责团队一样的处理方式）
+        const staffResponse = await request.get('/company/staff/list');
+        console.log('员工接口响应:', staffResponse);
+        
+        // 和负责团队一样的处理方式：优先从 data 字段获取，如果没有则从 rows 获取
+        if (staffResponse.code === 200) {
+          let staffData = [];
+          
+          // 优先尝试从 data 字段获取（和团队列表一样）
+          if (staffResponse.data && Array.isArray(staffResponse.data)) {
+            staffData = staffResponse.data;
+          } else if (staffResponse.rows && Array.isArray(staffResponse.rows)) {
+            // 如果 data 不存在，则从 rows 获取（兼容现有接口）
+            staffData = staffResponse.rows;
+          }
+          
+          if (staffData.length > 0) {
+            // 和团队列表一样的映射方式
+            this.staffList = staffData.map(item => ({
+              id: item.userId, // 使用userId作为员工ID
+              name: item.nickName || item.userName, // 优先使用nickName，没有则用userName
+              teamId: item.deptId || 0 // 使用deptId作为团队ID
+            })).filter(staff => staff.id && staff.name); // 过滤掉无效数据
+            
+            console.log('处理后的员工列表:', this.staffList);
+          } else {
+            this.staffList = [];
+            console.warn('获取员工列表失败或数据格式不正确');
+          }
+        } else {
+          this.staffList = [];
+          console.warn('获取员工列表失败或数据格式不正确');
+        }
+        
       } catch (error) {
         console.error('获取团队/员工列表失败：', error);
-        alert('获取团队/员工列表失败：' + (error.response?.data?.message || error.message));
-        // 兜底模拟数据
-        this.teamList = [
-          { id: 101, name: '销售一组' },
-          { id: 102, name: '销售二组' },
-          { id: 103, name: '销售三组' },
-          { id: 104, name: '技术支持组' },
-          { id: 105, name: '客服组' }
-        ];
-        this.staffList = [
-          { id: 1001, name: '员工一', teamId: 101 },
-          { id: 1002, name: '员工二', teamId: 102 },
-          { id: 1003, name: '员工三', teamId: 103 },
-          { id: 1006, name: '接口员工', teamId: 103 }
-        ];
+        // 不使用模拟数据，直接设置为空数组
+        this.teamList = [];
+        this.staffList = [];
+        alert('获取团队/员工列表失败：' + (error.message || '网络异常'));
       }
     },
 
@@ -872,6 +844,7 @@ export default {
         };
 
         console.log('修改客户请求参数:', JSON.stringify(requestData));
+        console.log('修改客户userId:', requestData.userId, '原始值:', customerData.userId);
 
         // 发送PUT请求到/customer/update
         const response = await request.put('/customer/update', requestData);
@@ -910,26 +883,46 @@ export default {
     async getCustomerList() {
       try {
         const response = await request.get('/customer/list');
-        // 若依分页接口返回 { rows: [...], total: n }
-        if (response.rows) {
-          this.customers = response.rows.map(item => ({
-            id: item.id,
-            name: item.name,
-            age: item.age,
-            contact: item.phone,
+        console.log('客户列表接口响应:', response);
+        
+        // 适配多种返回格式
+        if (response.code === 200) {
+          let customerData = [];
+          
+          if (response.data && Array.isArray(response.data)) {
+            customerData = response.data;
+          } else if (response.rows && Array.isArray(response.rows)) {
+            customerData = response.rows;
+          } else if (Array.isArray(response)) {
+            customerData = response;
+          }
+          
+          this.customers = customerData.map(item => ({
+            id: item.id || `CUST${Date.now()}`,
+            name: item.name || '未命名客户',
+            age: item.age || 0,
+            contact: item.phone || item.contact || '',
             status: this.getStatusByNumber(item.status),
-            createTime: item.createdAt,
-            address: item.address,
-            teamId: item.teamId,
-            userId: item.userId,
-            email: item.email,
-            remark: item.remark
+            createTime: item.createdAt || item.createTime || new Date().toLocaleString('zh-CN'),
+            address: item.address || '',
+            // 负责团队：兼容多种字段名，和负责员工保持一致
+            teamId: item.teamId || item.team_id || 0,
+            // 负责员工：兼容 userid（后端返回的小写）和 userId（驼峰）两种格式，和 teamId 保持一致的处理方式
+            userId: item.userid || item.userId || item.user_id || 0,
+            email: item.email || '',
+            remark: item.remark || ''
           }));
+
+          
+          
+          console.log('处理后的客户列表:', this.customers);
         } else {
           this.customers = [];
+          console.warn('获取客户列表失败:', response.msg);
         }
       } catch (error) {
         console.error('获取客户列表失败：', error);
+        this.customers = [];
         alert('获取客户列表失败：' + (error.message || '网络异常'));
       }
     },
@@ -942,7 +935,13 @@ export default {
         this.newCustomer.userId = '';
         return;
       }
-      this.filteredStaffList = this.staffList.filter(staff => staff.teamId === teamId);
+      // 筛选属于该团队的员工
+      this.filteredStaffList = this.staffList.filter(staff => {
+        // 兼容teamId可能是字符串或数字的情况
+        const staffTeamId = Number(staff.teamId);
+        return staffTeamId === teamId;
+      });
+      console.log(`团队${teamId}的筛选后员工:`, this.filteredStaffList);
       this.newCustomer.userId = '';
     },
 
@@ -953,19 +952,24 @@ export default {
         this.editCustomerData.userId = '';
         return;
       }
-      this.filteredEditStaffList = this.staffList.filter(staff => staff.teamId === teamId);
+      // 筛选属于该团队的员工
+      this.filteredEditStaffList = this.staffList.filter(staff => {
+        const staffTeamId = Number(staff.teamId);
+        return staffTeamId === teamId;
+      });
+      console.log(`编辑-团队${teamId}的筛选后员工:`, this.filteredEditStaffList);
       this.editCustomerData.userId = '';
     },
 
-    getTeamNameById(teamId) {
+      getTeamNameById(teamId) {
       if (!teamId) return '';
-      const team = this.teamList.find(item => item.id === Number(teamId));
+      const team = this.teamList.find(item => Number(item.id) === Number(teamId));
       return team ? team.name : '';
     },
 
     getStaffNameById(userId) {
       if (!userId) return '';
-      const staff = this.staffList.find(item => item.id === Number(userId));
+      const staff = this.staffList.find(item => Number(item.id) === Number(userId));
       return staff ? staff.name : '';
     },
 
@@ -1104,9 +1108,18 @@ export default {
     // 编辑客户
     editCustomer(customer) {
       this.editCustomerData = { ...customer };
-      this.editCustomerData.teamId = String(customer.teamId);
+      // 负责团队：转换为字符串
+      this.editCustomerData.teamId = String(customer.teamId || '');
+      // 负责员工：和负责团队一样的处理方式，直接转换为字符串
+      this.editCustomerData.userId = String(customer.userId || '');
+      
       const teamId = Number(customer.teamId);
-      this.filteredEditStaffList = this.staffList.filter(staff => staff.teamId === teamId);
+      // 筛选属于该团队的员工
+      this.filteredEditStaffList = this.staffList.filter(staff => {
+        const staffTeamId = Number(staff.teamId);
+        return staffTeamId === teamId;
+      });
+      console.log('编辑客户时的筛选员工:', this.filteredEditStaffList);
       this.showEditCustomer = true;
     },
 
@@ -1156,24 +1169,24 @@ export default {
           return;
         }
 
-        // 前端本地更新
-        const index = this.customers.findIndex(cust => cust.id == this.editCustomerData.id);
-        if (index !== -1) {
-          this.customers[index] = {
-            ...this.customers[index],
-            name: this.editCustomerData.name.trim(),
-            age: Number(this.editCustomerData.age),
-            contact: this.editCustomerData.contact.trim(),
-            status: this.editCustomerData.status,
-            address: this.editCustomerData.address.trim(),
-            teamId: Number(this.editCustomerData.teamId),
-            userId: Number(this.editCustomerData.userId),
-            email: this.editCustomerData.email.trim(),
-            remark: this.editCustomerData.remark.trim()
-          };
-          alert('客户修改成功！');
-          this.closeEditModal();
+        // 保存当前详情弹窗状态
+        const wasDetailOpen = this.showCustomerDetail;
+        const detailCustomerId = this.currentDetailCustomer.id;
+
+        // 重新从后端获取客户列表，确保数据是最新的（包括 userid 字段）
+        await this.getCustomerList();
+        
+        // 如果详情弹窗之前是打开的，重新打开并更新数据
+        if (wasDetailOpen && detailCustomerId) {
+          const updatedCustomer = this.customers.find(cust => cust.id == detailCustomerId);
+          if (updatedCustomer) {
+            this.currentDetailCustomer = { ...updatedCustomer };
+            this.showCustomerDetail = true;
+          }
         }
+        
+        alert('客户修改成功！');
+        this.closeEditModal();
 
       } catch (error) {
         console.error('修改客户出错：', error);
@@ -1183,23 +1196,78 @@ export default {
       }
     },
 
-    // 删除客户
-    deleteCustomer(custId) {
+    // 删除客户 - 接口方式
+    async deleteCustomer(custId) {
       if (confirm('确定要删除该客户吗？删除后不可恢复！')) {
-        // 可选：调用删除接口
-        // request.delete(`/customer/delete/${custId}`).then(() => {
-        //   this.customers = this.customers.filter(cust => cust.id !== custId);
-        //   alert('客户删除成功！');
-        // }).catch(error => {
-        //   console.error('删除客户失败：', error);
-        //   alert('删除客户失败：' + (error.response?.data?.message || error.message));
-        // });
-
-        // 本地删除
-        this.customers = this.customers.filter(cust => cust.id !== custId);
-        alert('客户删除成功！');
-        if (this.filteredCustomers.length === 0 && this.currentPage > 1) {
-          this.currentPage--;
+        try {
+          // 构建请求URL和参数
+          const requestUrl = `/customer/${custId}`;
+          console.log('删除客户请求URL:', requestUrl);
+          
+          // 发送DELETE请求
+          const response = await request.delete(requestUrl);
+          
+          console.log('删除客户响应:', response);
+          
+          // 检查响应是否成功（若依框架返回 code: 200 表示成功）
+          if (response.code === 200) {
+            // 前端本地删除
+            this.customers = this.customers.filter(cust => cust.id !== custId);
+            
+            // 如果当前页没有数据了，且不是第一页，则跳转到上一页
+            if (this.filteredCustomers.length === 0 && this.currentPage > 1) {
+              this.currentPage--;
+            }
+            
+            alert('客户删除成功！');
+            
+            // 可选：重新从服务器获取最新数据
+            // await this.getCustomerList();
+          } else {
+            throw new Error(response.msg || '删除失败');
+          }
+          
+        } catch (error) {
+          console.error('删除客户失败：', error);
+          
+          // 详细的错误处理
+          let errorMsg = '网络异常或接口错误';
+          if (error.response) {
+            // 服务器响应了错误状态码
+            const status = error.response.status;
+            const data = error.response.data;
+            errorMsg = data?.message || `服务器错误 ${status}`;
+            console.error('响应状态:', status);
+            console.error('响应数据:', data);
+            
+            // 如果接口返回未授权等错误，可以跳转到登录页
+            if (status === 401) {
+              alert('登录已过期，请重新登录');
+              // window.location.href = '/login';
+              return;
+            }
+            
+            // 如果是404错误，可能是客户已被删除
+            if (status === 404) {
+              errorMsg = '该客户可能已被删除';
+              // 前端本地同步删除
+              this.customers = this.customers.filter(cust => cust.id !== custId);
+            }
+          } else if (error.request) {
+            // 请求已发送但无响应
+            errorMsg = '服务器无响应，请检查网络连接';
+            console.error('请求数据:', error.request);
+          } else if (error.message) {
+            // 其他错误
+            errorMsg = error.message;
+          }
+          
+          // 如果是404错误，已经在前端删除了，可以只提示不弹窗
+          if (error.response?.status !== 404) {
+            alert('删除客户失败：' + errorMsg);
+          } else {
+            alert('客户已被删除或不存在');
+          }
         }
       }
     },
@@ -1236,8 +1304,8 @@ export default {
             '联系方式': '13800138001', 
             '状态（活跃/非活跃/VIP）': '活跃',
             '客户地址': '示例地址',
-            '负责团队': '销售三组',
-            '负责员工': '接口员工',
+            '负责团队': '研发部门',
+            '负责员工': '若依',
             '客户邮箱': 'example@xxx.com',
             '备注': '示例备注'
           },
@@ -1247,8 +1315,8 @@ export default {
             '联系方式': '13900139002', 
             '状态（活跃/非活跃/VIP）': 'VIP',
             '客户地址': '示例地址2',
-            '负责团队': '销售二组',
-            '负责员工': '员工二',
+            '负责团队': '测试部门',
+            '负责员工': '若依',
             '客户邮箱': 'example2@xxx.com',
             '备注': '示例备注2'
           }
@@ -1349,13 +1417,17 @@ export default {
           errorMsgList.push(`第${rowNum}行：联系方式已存在，跳过`);
           return;
         }
+        // 根据团队名称查找团队ID
         const team = this.teamList.find(item => item.name === data.teamName);
         if (!team) {
           errorMsgList.push(`第${rowNum}行：负责团队不存在`);
           return;
         }
         data.teamId = team.id;
-        const staff = this.staffList.find(item => item.name === data.staffName && item.teamId === team.id);
+        // 根据员工名称和团队ID查找员工
+        const staff = this.staffList.find(item => 
+          item.name === data.staffName && Number(item.teamId) === Number(team.id)
+        );
         if (!staff) {
           errorMsgList.push(`第${rowNum}行：负责员工不存在或不属于该团队`);
           return;

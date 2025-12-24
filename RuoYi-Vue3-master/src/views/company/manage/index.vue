@@ -11,27 +11,25 @@
         <h2>企业验证管理</h2>
         <p class="sub-title">管理所有企业验证信息</p>
       </div>
-      <!-- 可扩展功能按钮（如新增） -->
     </div>
 
     <!-- 搜索筛选区 -->
     <div class="search-filter-card">
       <el-form :inline="true" :model="searchForm" class="search-form">
         <el-form-item label="企业名称">
-          <el-input v-model="searchForm.companyName" placeholder="请输入企业名称"></el-input>
+          <el-input v-model="searchForm.companyName" placeholder="请输入企业名称" />
         </el-form-item>
+
         <el-form-item label="验证状态">
-          <!-- 下拉框设置固定宽度，保证字体显示空间 -->
-          <el-select 
-            v-model="selectedStatus" 
-            placeholder="请选择状态"
-            style="width: 160px;">
-            <el-option label="全部" value=""></el-option>
-            <el-option label="待审核" value="pending"></el-option>
-            <el-option label="已通过" value="passed"></el-option>
-            <el-option label="已驳回" value="rejected"></el-option>
+          <el-select v-model="selectedStatus" placeholder="请选择状态" style="width: 160px">
+            <el-option label="全部" value="" />
+            <!-- 后端 state：常见约定：1待审核 2通过 3驳回 -->
+            <el-option label="待审核" value="1" />
+            <el-option label="已通过" value="2" />
+            <el-option label="已驳回" value="3" />
           </el-select>
         </el-form-item>
+
         <el-form-item>
           <el-button type="primary" class="search-btn" @click="handleSearch">搜索</el-button>
           <el-button @click="handleReset">重置</el-button>
@@ -41,46 +39,48 @@
 
     <!-- 数据列表 -->
     <div class="table-card">
-      <el-table :data="tableData" border stripe style="width: 100%" size="large">
-        <el-table-column prop="id" label="企业编号" width="120"></el-table-column>
+      <el-table :data="tableData" border stripe style="width: 100%" size="large" v-loading="loading">
+        <el-table-column prop="id" label="企业编号" width="120" />
+
         <el-table-column label="企业名称" min-width="200">
           <template #default="scope">
             <div class="company-name-item">
               <el-avatar :size="36" class="name-avatar">
-                {{ scope.row.companyName.slice(0, 1) }}
+                {{ (scope.row.name || '').slice(0, 1) }}
               </el-avatar>
-              <span class="name-text">{{ scope.row.companyName }}</span>
+              <span class="name-text">{{ scope.row.name }}</span>
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="legalPerson" label="法人" width="120"></el-table-column>
-        <el-table-column prop="phone" label="联系方式" width="160"></el-table-column>
-        <el-table-column prop="applyTime" label="申请时间" width="200"></el-table-column>
-        <el-table-column prop="status" label="验证状态" width="140">
+
+        <el-table-column prop="leName" label="法人" width="120" />
+        <el-table-column prop="lePhone" label="联系方式" width="160" />
+        <el-table-column prop="createTime" label="申请时间" width="200" />
+
+        <el-table-column label="验证状态" width="140">
           <template #default="scope">
-            <el-tag 
-              :class="scope.row.status === 'pending' ? 'tag-warning' : 
-                      scope.row.status === 'passed' ? 'tag-success' : 'tag-danger'"
-              size="medium">
-              {{ scope.row.status === 'pending' ? '待审核' : 
-                 scope.row.status === 'passed' ? '已通过' : '已驳回' }}
+            <el-tag :class="stateTagClass(scope.row.state)" size="medium">
+              {{ stateLabel(scope.row.state) }}
             </el-tag>
           </template>
         </el-table-column>
+
         <el-table-column label="操作" width="180">
           <template #default="scope">
             <el-button type="text" class="operate-btn" @click="handleDetail(scope.row)">详情</el-button>
-            <el-button 
-              v-if="scope.row.status === 'pending'" 
-              type="text" 
-              class="operate-btn audit-btn" 
-              @click="handleAudit(scope.row)">审核
+            <el-button
+              v-if="Number(scope.row.state) === 1"
+              type="text"
+              class="operate-btn audit-btn"
+              @click="handleAudit(scope.row)"
+            >
+              审核
             </el-button>
           </template>
         </el-table-column>
       </el-table>
 
-      <!-- 分页组件（与客户管理页风格一致） -->
+      <!-- 分页组件 -->
       <div class="pagination-container">
         <span class="total-count">共 {{ total }} 条记录</span>
         <el-pagination
@@ -90,55 +90,62 @@
           :page-size="pageSize"
           :total="total"
           background
-          style="margin-left: 10px;"
-          size="large">
-        </el-pagination>
+          style="margin-left: 10px"
+          size="large"
+        />
       </div>
     </div>
 
-    <!-- 详情弹窗（保持风格统一） -->
+    <!-- 详情弹窗 -->
     <el-dialog
       v-model="detailDialogVisible"
       title="企业验证详情"
       width="70%"
       destroy-on-close
       :close-on-click-modal="false"
-      :custom-class="'detail-dialog'">
+      :custom-class="'detail-dialog'"
+    >
       <div v-if="currentRow" class="detail-content">
         <el-descriptions :column="2" border size="large" style="width: 100%">
           <el-descriptions-item label="企业编号">{{ currentRow.id }}</el-descriptions-item>
-          <el-descriptions-item label="企业名称">{{ currentRow.companyName }}</el-descriptions-item>
-          <el-descriptions-item label="统一社会信用代码">{{ currentRow.creditCode }}</el-descriptions-item>
-          <el-descriptions-item label="法人">{{ currentRow.legalPerson }}</el-descriptions-item>
-          <el-descriptions-item label="企业地址">{{ currentRow.address }}</el-descriptions-item>
-          <el-descriptions-item label="联系方式">{{ currentRow.phone }}</el-descriptions-item>
-          <el-descriptions-item label="申请时间">{{ currentRow.applyTime }}</el-descriptions-item>
-          <el-descriptions-item label="验证状态">
-            <el-tag 
-              :class="currentRow.status === 'pending' ? 'tag-warning' : 
-                      currentRow.status === 'passed' ? 'tag-success' : 'tag-danger'"
-              size="medium">
-              {{ currentRow.status === 'pending' ? '待审核' : 
-                 currentRow.status === 'passed' ? '已通过' : '已驳回' }}
-            </el-tag>
+          <el-descriptions-item label="企业名称">{{ currentRow.name }}</el-descriptions-item>
+
+          <el-descriptions-item label="企业地址">{{ currentRow.address || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="申请时间">{{ currentRow.createTime || '-' }}</el-descriptions-item>
+
+          <el-descriptions-item label="法人">{{ currentRow.leName || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="联系方式">{{ currentRow.lePhone || '-' }}</el-descriptions-item>
+
+          <el-descriptions-item label="法人邮箱">{{ currentRow.leEmail || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="法人年龄">{{ currentRow.leAge ?? '-' }}</el-descriptions-item>
+
+          <el-descriptions-item label="法人证件号" span="2">
+            {{ currentRow.leCard || '-' }}
           </el-descriptions-item>
-          <el-descriptions-item label="审核时间" v-if="currentRow.auditTime">{{ currentRow.auditTime }}</el-descriptions-item>
-          <el-descriptions-item label="审核意见" v-if="currentRow.auditOpinion" span="2">
-            {{ currentRow.auditOpinion || '无' }}
+
+          <el-descriptions-item label="备注" span="2">
+            {{ currentRow.remark || '无' }}
+          </el-descriptions-item>
+
+          <el-descriptions-item label="验证状态">
+            <el-tag :class="stateTagClass(currentRow.state)" size="medium">
+              {{ stateLabel(currentRow.state) }}
+            </el-tag>
           </el-descriptions-item>
         </el-descriptions>
 
-        <!-- 企业资质图片展示（替换为可访问的示例图） -->
-        <div class="cert-img-container" v-if="currentRow.certImgs && currentRow.certImgs.length">
+        <!-- 企业资质图片展示：后端字段可能是 license / cplicense -->
+        <div class="cert-img-container" v-if="currentCertImgs.length">
           <h4 class="cert-title">企业资质证明：</h4>
           <div class="img-list">
             <el-image
-              v-for="(img, index) in currentRow.certImgs"
+              v-for="(img, index) in currentCertImgs"
               :key="index"
               :src="img"
               fit="contain"
               style="width: 200px; height: 200px; margin-right: 20px; margin-top: 10px"
-              preview-src-list="currentRow.certImgs">
+              :preview-src-list="currentCertImgs"
+            >
               <template #error>
                 <div class="image-placeholder">资质图片</div>
               </template>
@@ -146,6 +153,7 @@
           </div>
         </div>
       </div>
+
       <template #footer>
         <el-button @click="detailDialogVisible = false" size="large">关闭</el-button>
       </template>
@@ -158,7 +166,8 @@
       width="50%"
       destroy-on-close
       :close-on-click-modal="false"
-      :custom-class="'audit-dialog'">
+      :custom-class="'audit-dialog'"
+    >
       <div v-if="currentRow" class="audit-content">
         <el-form :model="auditForm" label-width="80px" size="large">
           <el-form-item label="审核结果" prop="result">
@@ -167,161 +176,210 @@
               <el-radio label="rejected" border size="large">驳回</el-radio>
             </el-radio-group>
           </el-form-item>
+
+          <!-- 说明：你当前后端不接收审核意见字段，这里仅做前端校验 -->
           <el-form-item label="审核意见" prop="opinion" v-if="auditForm.result">
             <el-input
               v-model="auditForm.opinion"
               type="textarea"
               :rows="5"
               placeholder="请输入审核意见（驳回时必填）"
-              size="large"></el-input>
+              size="large"
+            />
           </el-form-item>
         </el-form>
       </div>
+
       <template #footer>
         <el-button @click="auditDialogVisible = false" size="large">取消</el-button>
-        <el-button type="primary" @click="handleSubmitAudit" size="large">提交</el-button>
+        <el-button type="primary" @click="handleSubmitAudit" size="large" :loading="submitLoading">
+          提交
+        </el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 
-// 搜索表单：仅保留必要字段，简化逻辑
+// 只改前端且不动项目配置：用 @ts-ignore 压掉 ts-plugin(2307) 报错（运行仍由构建工具解析 @ 别名）
+// @ts-ignore
+import request from '@/utils/request';
+
+type CompanyRow = {
+  id: number;
+  name: string;
+  address?: string | null;
+  // 你接口返回里是 license，但你日志 SQL 里是 cplicense；这里两者都兼容
+  license?: string | null;
+  cplicense?: string | null;
+
+  leName?: string | null;
+  leAge?: number | null;
+  leEmail?: string | null;
+  lePhone?: string | null;
+  leCard?: string | null;
+
+  state?: number | null;
+  remark?: string | null;
+  createTime?: string | null;
+  updateTime?: string | null;
+
+  tenantId?: number | null;
+  isDeleted?: number | null;
+
+  // 允许后端多余字段
+  [k: string]: any;
+};
+
+const loading = ref(false);
+const submitLoading = ref(false);
+
+// 搜索表单
 const searchForm = reactive({
   companyName: ''
 });
+const selectedStatus = ref<string>(''); // '', '1','2','3'
 
-// 关键：单独定义下拉框绑定值（直接对应option的value，Element Plus会自动显示对应的label）
-const selectedStatus = ref(''); // 初始为空，下拉框显示占位符
-
-// 原始表格数据（替换为可访问的示例图片）
-const originTableData = ref([
-  {
-    id: 'ENT001',
-    companyName: '北京字节跳动科技有限公司',
-    creditCode: '911101085923662400',
-    legalPerson: '张一鸣',
-    address: '北京市海淀区中关村软件园',
-    phone: '010-12345678',
-    applyTime: '2025-12-01 10:20:30',
-    status: 'pending',
-    auditTime: '',
-    auditOpinion: '',
-    certImgs: [
-      'https://picsum.photos/400/300?random=1',
-      'https://picsum.photos/400/300?random=2'
-    ]
-  },
-  {
-    id: 'ENT002',
-    companyName: '深圳市腾讯计算机系统有限公司',
-    creditCode: '91440300708461136T',
-    legalPerson: '马化腾',
-    address: '广东省深圳市南山区腾讯大厦',
-    phone: '0755-83765566',
-    applyTime: '2025-12-02 14:30:20',
-    status: 'passed',
-    auditTime: '2025-12-02 16:00:00',
-    auditOpinion: '资料齐全，审核通过',
-    certImgs: []
-  },
-  {
-    id: 'ENT003',
-    companyName: '阿里巴巴（中国）有限公司',
-    creditCode: '91330100768225698A',
-    legalPerson: '张勇',
-    address: '浙江省杭州市余杭区文一西路969号',
-    phone: '0571-85022088',
-    applyTime: '2025-12-03 09:15:10',
-    status: 'rejected',
-    auditTime: '2025-12-03 10:00:00',
-    auditOpinion: '资质证明模糊，驳回重新提交',
-    certImgs: []
-  },
-  {
-    id: 'ENT004',
-    companyName: '百度在线网络技术（北京）有限公司',
-    creditCode: '91110000802100433B',
-    legalPerson: '李彦宏',
-    address: '北京市海淀区百度科技园',
-    phone: '010-59928888',
-    applyTime: '2025-12-04 11:20:00',
-    status: 'pending',
-    auditTime: '',
-    auditOpinion: '',
-    certImgs: []
-  }
-]);
-
-// 表格数据（用于展示和筛选）
-const tableData = ref([...originTableData.value]);
-
-// 分页参数
+// 列表与分页
+const tableData = ref<CompanyRow[]>([]);
+const total = ref(0);
 const currentPage = ref(1);
 const pageSize = ref(10);
-const total = ref(tableData.value.length);
 
-// 弹窗相关
+// 弹窗
 const detailDialogVisible = ref(false);
 const auditDialogVisible = ref(false);
-const currentRow = ref<any>(null);
+const currentRow = ref<CompanyRow | null>(null);
 
 // 审核表单
 const auditForm = reactive({
-  result: '',
+  result: '' as '' | 'passed' | 'rejected',
   opinion: ''
 });
 
-// 生命周期 - 页面加载
-onMounted(() => {
-  // 可在此处调用接口获取数据
+/** 状态显示：按常见约定 1待审核 2通过 3驳回 */
+const stateLabel = (state?: number | null) => {
+  const s = Number(state);
+  if (s === 1) return '待审核';
+  if (s === 2) return '已通过';
+  if (s === 3) return '已驳回';
+  return '未知';
+};
+const stateTagClass = (state?: number | null) => {
+  const s = Number(state);
+  if (s === 1) return 'tag-warning';
+  if (s === 2) return 'tag-success';
+  if (s === 3) return 'tag-danger';
+  return 'tag-warning';
+};
+
+/** 图片 URL 兜底拼接：尽量不依赖项目配置；若你能访问 /profile/xxx，可把 fallbackPrefix 改成 /profile/ */
+const resolveFileUrl = (p: string) => {
+  if (!p) return '';
+  if (/^https?:\/\//i.test(p)) return p;
+
+  // 若后端返回 /images/1.png 这种绝对路径，直接用（或由代理自动补前缀）
+  if (p.startsWith('/')) return p;
+
+  // 若只返回文件名：给一个兜底前缀（按你项目实际静态资源路径调整）
+  const fallbackPrefix = '/profile/';
+  return `${fallbackPrefix}${p}`;
+};
+
+const currentCertImgs = computed(() => {
+  const lic = currentRow.value?.license || currentRow.value?.cplicense;
+  if (!lic) return [];
+  // 允许逗号分隔多个
+  const parts = String(lic)
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return parts.map(resolveFileUrl).filter(Boolean);
 });
 
-// 搜索事件：直接使用selectedStatus的值进行筛选
-const handleSearch = () => {
-  const filteredData = originTableData.value.filter(item => {
-    const nameMatch = item.companyName.includes(searchForm.companyName);
-    const statusMatch = selectedStatus.value ? item.status === selectedStatus.value : true;
-    return nameMatch && statusMatch;
-  });
-  tableData.value = filteredData;
-  total.value = filteredData.length;
-  currentPage.value = 1;
+/** 拉取列表：GET /company/manage/list */
+const fetchList = async () => {
+  loading.value = true;
+  try {
+    const params: Record<string, any> = {
+      pageNum: currentPage.value,
+      pageSize: pageSize.value
+    };
+    if (searchForm.companyName) params.name = searchForm.companyName;
+    if (selectedStatus.value) params.state = Number(selectedStatus.value);
+
+    const res: any = await request({
+      url: '/company/manage/list',
+      method: 'get',
+      params
+    });
+
+    if (res?.code !== 200) {
+      ElMessage.error(res?.msg || '查询失败');
+      tableData.value = [];
+      total.value = 0;
+      return;
+    }
+
+    tableData.value = (res.rows || []) as CompanyRow[];
+    total.value = Number(res.total ?? tableData.value.length);
+  } catch (e) {
+    ElMessage.error('查询失败，请检查接口/权限/网络');
+    tableData.value = [];
+    total.value = 0;
+  } finally {
+    loading.value = false;
+  }
 };
 
-// 重置事件：清空所有筛选条件
+onMounted(() => {
+  fetchList();
+});
+
+// 搜索
+const handleSearch = () => {
+  currentPage.value = 1;
+  fetchList();
+};
+
+// 重置
 const handleReset = () => {
   searchForm.companyName = '';
-  selectedStatus.value = ''; // 重置下拉框为初始状态（显示占位符）
-  tableData.value = [...originTableData.value];
-  total.value = tableData.value.length;
+  selectedStatus.value = '';
   currentPage.value = 1;
+  fetchList();
 };
 
-// 分页 - 当前页改变
+// 分页
 const handleCurrentChange = (val: number) => {
   currentPage.value = val;
+  fetchList();
 };
 
-// 查看详情
-const handleDetail = (row: any) => {
+// 详情
+const handleDetail = (row: CompanyRow) => {
   currentRow.value = { ...row };
   detailDialogVisible.value = true;
 };
 
-// 审核操作
-const handleAudit = (row: any) => {
+// 审核
+const handleAudit = (row: CompanyRow) => {
   currentRow.value = { ...row };
   auditForm.result = '';
   auditForm.opinion = '';
   auditDialogVisible.value = true;
 };
 
-// 提交审核
-const handleSubmitAudit = () => {
+/**
+ * 提交审核 —— 只改前端且绕开后端 /updateState 的 500 异常：
+ * 1) GET /company/manage/{id} 拿详情
+ * 2) 修改 state
+ * 3) PUT /company/manage/update 提交完整对象
+ */
+const handleSubmitAudit = async () => {
   if (!auditForm.result) {
     ElMessage.warning('请选择审核结果');
     return;
@@ -330,24 +388,58 @@ const handleSubmitAudit = () => {
     ElMessage.warning('驳回时请输入审核意见');
     return;
   }
-
-  // 同时更新表格数据和原始数据
-  const tableIndex = tableData.value.findIndex(item => item.id === currentRow.value.id);
-  if (tableIndex > -1) {
-    tableData.value[tableIndex].status = auditForm.result;
-    tableData.value[tableIndex].auditTime = new Date().toLocaleString();
-    tableData.value[tableIndex].auditOpinion = auditForm.opinion;
+  if (!currentRow.value?.id) {
+    ElMessage.error('缺少企业ID，无法提交');
+    return;
   }
 
-  const originIndex = originTableData.value.findIndex(item => item.id === currentRow.value.id);
-  if (originIndex > -1) {
-    originTableData.value[originIndex].status = auditForm.result;
-    originTableData.value[originIndex].auditTime = new Date().toLocaleString();
-    originTableData.value[originIndex].auditOpinion = auditForm.opinion;
-  }
+  // 映射：通过=2，驳回=3（按你当前接口返回/常见约定）
+  const newState = auditForm.result === 'passed' ? 2 : 3;
 
-  ElMessage.success('审核提交成功');
-  auditDialogVisible.value = false;
+  submitLoading.value = true;
+  try {
+    // 1) 拉详情（避免只传 id/state 导致其他字段被置空）
+    const detailRes: any = await request({
+      url: `/company/manage/${currentRow.value.id}`,
+      method: 'get'
+    });
+
+    if (detailRes?.code !== 200) {
+      ElMessage.error(detailRes?.msg || '获取企业详情失败');
+      return;
+    }
+
+    const company: CompanyRow = detailRes.data;
+    if (!company?.id) {
+      ElMessage.error('企业详情数据异常');
+      return;
+    }
+
+    // 2) 改状态
+    company.state = newState;
+
+    // 3) 调用 update（后端是 @PutMapping("/update")）
+    const updateRes: any = await request({
+      url: '/company/manage/update',
+      method: 'put',
+      data: company
+    });
+
+    if (updateRes?.code !== 200) {
+      ElMessage.error(updateRes?.msg || '提交失败');
+      return;
+    }
+
+    ElMessage.success('审核提交成功');
+    auditDialogVisible.value = false;
+
+    // 4) 刷新列表
+    fetchList();
+  } catch (e) {
+    ElMessage.error('提交失败，请检查接口/权限/网络');
+  } finally {
+    submitLoading.value = false;
+  }
 };
 </script>
 
