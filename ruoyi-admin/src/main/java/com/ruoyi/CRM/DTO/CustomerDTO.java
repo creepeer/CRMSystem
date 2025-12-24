@@ -13,7 +13,6 @@ public class CustomerDTO {
     @ApiModelProperty(value = "客户ID")
     private Long id;
 
-    @ApiModelProperty(value = "客户姓名", example = "张三", required = true)
     @NotBlank(message = "客户姓名不能为空")
     private String name;
 
@@ -26,7 +25,6 @@ public class CustomerDTO {
     @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
     private String phone;
 
-    @ApiModelProperty(value = "客户邮箱", example = "zhangsan@example.com")
     @Email(message = "邮箱格式不正确")
     private String email;
 

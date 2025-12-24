@@ -45,7 +45,7 @@ public interface INCustomerService
      * @param nCustomer 【请填写功能名称】
      * @return 结果
      */
-    public int updateNCustomer(NCustomer nCustomer);
+    public int updateNCustomer(NCustomer nCustomer,Long userId);
 
     /**
      * 批量删除【请填写功能名称】

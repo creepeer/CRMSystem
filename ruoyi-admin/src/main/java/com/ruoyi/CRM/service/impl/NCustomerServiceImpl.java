@@ -108,8 +108,12 @@ public class NCustomerServiceImpl implements INCustomerService
      * @return 结果
      */
     @Override
-    public int updateNCustomer(NCustomer nCustomer)
+    public int updateNCustomer(NCustomer nCustomer,Long userId)
     {
+        System.out.println(nCustomer.getId()+"111123");
+        NUserGuest nUserGuest=nUserGuestMapper.selectNUserGuestByCustomerId(nCustomer.getId());
+        nUserGuest.setUserId(userId);
+        nUserGuestMapper.updateNUserGuest(nUserGuest);
         return nCustomerMapper.updateNCustomer(nCustomer);
     }
     /**
