@@ -7,6 +7,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ruoyi.CRM.DTO.CustomerDTO;
+import com.ruoyi.common.core.domain.entity.SysUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,15 +84,8 @@ public class NCustomerController extends BaseController
     @PostMapping("/add")
     public AjaxResult add(@RequestBody CustomerDTO customerDTO)
     {
-        NCustomer customer=new NCustomer();
-        BeanUtils.copyProperties(customerDTO,customer);
-        customer.setTenantId(getTenantId());
-        String customerCode = "CUST-" + UUID.randomUUID().toString().replace("-", "").substring(0, 12).toUpperCase();
-        customer.setcCode(customerCode);
-        customer.setCreatedBy(getUserId());
-        customer.setCreatedAt(new Date());
-        System.out.println(customer);
-        return toAjax(nCustomerService.insertNCustomer(customer));
+
+        return toAjax(nCustomerService.insertNCustomer(customerDTO,getTenantId(),getUserId()));
     }
 
     /**
@@ -117,5 +111,16 @@ public class NCustomerController extends BaseController
     public AjaxResult remove(@PathVariable Long[] ids)
     {
         return toAjax(nCustomerService.deleteNCustomerByIds(ids));
+    }
+
+    /**
+     * 获取用户列表
+     */
+
+    @GetMapping("/getmember/{userId}")
+    public TableDataInfo getMember(@PathVariable Long userId)
+    {
+        List<NCustomer> list = nCustomerService.getMember(userId);
+        return getDataTable(list);
     }
 }

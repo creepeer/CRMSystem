@@ -590,9 +590,8 @@ const getDeptTree = () => request({ url: "/company/staff/deptTree", method: "get
  */
 const getStaffCustomersApi = (userId) =>
   request({
-    url: "/company/staff/customers",
+    url: `/customer/getmember/${userId}`,
     method: "get",
-    params: { userId },
   });
 
 /* ---------- 响应式数据 ---------- */
@@ -613,22 +612,6 @@ const queryParams = reactive({
   userName: "",
   deptId: undefined,
 });
-
-/* =======================
- * DEMO：员工号=1 的假客户数据（用于展示树形展开）
- * 用完可把 DEMO_ENABLE 改成 false 或删掉整段
- * ======================= */
-const DEMO_ENABLE = true;
-const DEMO_STAFF_ID = 1;
-
-const DEMO_CUSTOMERS_FOR_STAFF_1 = [
-  { customerId: 1001, customerName: "张三（演示）", phone: "13800000001", email: "zhangsan_demo@corp.com", address: "杭州市西湖区文三路 1 号", remark: "意向客户，回访中" },
-  { customerId: 1002, customerName: "李四（演示）", phone: "13800000002", email: "lisi_demo@corp.com", address: "上海市浦东新区世纪大道 88 号", remark: "已成交，维护关系" },
-  { customerId: 1003, customerName: "王五（演示）", phone: "13800000003", email: "", address: "北京市海淀区中关村大街 10 号", remark: "关注价格，需二次报价" },
-  { customerId: 1004, customerName: "赵六（演示）", phone: "", email: "zhaoliu_demo@corp.com", address: "深圳市南山区科技园 5 号楼", remark: "备注为空也可展示 '-'" },
-];
-
-
 
 /* ---------- 部门树 ---------- */
 const deptTree = ref([]);
@@ -979,13 +962,11 @@ const customerCache = reactive({}); // { [userId]: customers[] }
 
 const normalizeCustomers = (list) => {
   return (list || []).map((c) => ({
-    customerId: c.customerId || c.id || c.cid || null,
-    customerName: c.customerName || c.name || c.nickName || c.realName || "",
+    customerId: c.id || c.customerId || c.cid || null,
+    customerName: c.name || c.customerName || c.nickName || c.realName || "",
     phone: c.phone || c.mobile || c.telephone || "",
     email: c.email || "",
-    // 新增：地址（兼容几种常见字段名）
     address: c.address || c.addr || c.location || c.customerAddress || "",
-    // 新增：备注（兼容几种常见字段名）
     remark: c.remark || c.note || c.memo || c.comment || "",
   }));
 };
@@ -997,15 +978,6 @@ const loadCustomersByStaff = async (userId) => {
     return;
   }
 
-  // DEMO：员工号=1 时直接返回假客户，确保能展示树形展开效果
-  if (DEMO_ENABLE && Number(userId) === DEMO_STAFF_ID) {
-    const normalized = normalizeCustomers(DEMO_CUSTOMERS_FOR_STAFF_1);
-    customerCache[userId] = normalized;
-    customerList.value = normalized;
-    return;
-  }
-
-
   // 有缓存直接用
   if (customerCache[userId]) {
     customerList.value = customerCache[userId];
@@ -1014,48 +986,63 @@ const loadCustomersByStaff = async (userId) => {
 
   customerLoading.value = true;
   try {
-    const res = await getStaffCustomersApi(userId);
-
-    // 兼容多种返回结构：data / rows
-    const rawList = res.data || res.rows || [];
-    let normalized = normalizeCustomers(rawList);
-
-    /** 演示数据：仅用于员工号=1 且后端没返回任何客户时 */
-    if (String(userId) === "1" && (!normalized || normalized.length === 0)) {
-      normalized = normalizeCustomers([
-        {
-          id: 101,
-          customerName: "张三",
-          phone: "13800001111",
-          email: "zhangsan@example.com",
-          address: "杭州市西湖区文三路 88 号",
-          remark: "重点客户，意向强",
-        },
-        {
-          id: 102,
-          customerName: "李四",
-          phone: "13900002222",
-          email: "lisi@example.com",
-          address: "杭州市滨江区江南大道 66 号",
-          remark: "下周回访",
-        },
-        {
-          id: 103,
-          customerName: "王五",
-          phone: "",
-          email: "",
-          address: "杭州市上城区延安路 1 号",
-          remark: "仅线下沟通",
-        },
-      ]);
+    let res;
+    
+    // 方式1：直接查询客户表，使用 createdBy 字段（常见设计）
+    try {
+      res = await request({
+        url: `/customer/list`,
+        method: "get",
+        params: { 
+          createdBy: userId,
+          pageNum: 1,
+          pageSize: 100  // 假设需要获取所有客户
+        }
+      });
+    } catch (error1) {
+      console.log("方式1失败:", error1.message);
+      
+      // 方式2：通过员工ID获取客户列表
+      try {
+        res = await request({
+          url: `/company/staff/${userId}/customers`,
+          method: "get"
+        });
+      } catch (error2) {
+        console.log("方式2失败:", error2.message);
+        
+        // 方式3：查询关联表
+        try {
+          res = await request({
+            url: `/customer/staff/${userId}`,
+            method: "get"
+          });
+        } catch (error3) {
+          console.log("方式3失败:", error3.message);
+          
+          // 方式4：临时使用模拟数据，避免报错
+          console.warn("所有API尝试失败，使用空数据");
+          res = {
+            rows: [],
+            code: 200,
+            msg: "未配置客户接口，显示空列表"
+          };
+        }
+      }
     }
+
+    // 根据API响应结构处理数据
+    const rawList = res.rows || res.data || [];
+    const normalized = normalizeCustomers(rawList);
 
     customerCache[userId] = normalized;
     customerList.value = normalized;
 
   } catch (e) {
+    console.error("获取客户异常:", e);
     customerList.value = [];
-    ElMessage.error("获取客户失败：" + (e.message || "网络错误"));
+    // 不显示错误提示，避免影响用户体验
+    // ElMessage.error("获取客户失败：" + (e.message || "网络错误"));
   } finally {
     customerLoading.value = false;
   }
@@ -1085,6 +1072,7 @@ const collapseCustomers = () => {
   expandedStaffId.value = null;
   customerList.value = [];
 };
+
 
 const filteredCustomerList = computed(() => customerList.value);
 

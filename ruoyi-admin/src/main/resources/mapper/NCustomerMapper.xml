@@ -127,4 +127,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{id}
         </foreach>
     </delete>
+    <select id="selectNCustomerByIds" parameterType="java.util.List" resultMap="NCustomerResult">
+        <include refid="selectNCustomerVo"/>
+        where id in
+        <foreach item="id" collection="list" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        and is_deleted = 0
+    </select>
 </mapper>
