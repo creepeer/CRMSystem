@@ -2,6 +2,7 @@ package com.ruoyi.system.service.impl;
 
 
 
+import com.ruoyi.common.core.domain.entity.SysUser;
 import com.ruoyi.system.domain.NCompany;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.system.mapper.NCompanyMapper;
@@ -73,6 +74,26 @@ public class NCompanyServiceImpl implements INCompanyService
     {
         nCompany.setUpdateTime(DateUtils.getNowDate());
         return nCompanyMapper.updateNCompany(nCompany);
+    }
+
+    /**
+     * 修改企业状态
+     *
+     * @param id 企业ID
+     * @param state 状态值（0=停用，1=启用）
+     * @return 结果
+     */
+    public int updateCompanyState(Long id, Integer state) {
+        NCompany company = new NCompany();
+        company.setId(id);
+        company.setState(state);
+        if(state == 2){
+            NCompany nC = nCompanyMapper.selectNCompanyById(id);
+            SysUser sU = userMapper.selectUserByTenantId(nC.getId());
+            sU.setStatus("0");
+            userMapper.updateUser(sU);
+        }
+        return nCompanyMapper.updateNCompany(company);
     }
 
     /**

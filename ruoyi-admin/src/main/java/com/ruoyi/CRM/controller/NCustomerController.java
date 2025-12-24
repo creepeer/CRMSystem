@@ -7,6 +7,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ruoyi.CRM.DTO.CustomerDTO;
+import com.ruoyi.CRM.DTO.GetCustomerListDTO;
 import com.ruoyi.common.core.domain.entity.SysUser;
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,7 +31,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 
 /**
  * 【请填写功能名称】Controller
- * 
+ *
  * @author ruoyi
  * @date 2025-12-22
  */
@@ -49,22 +50,14 @@ public class NCustomerController extends BaseController
     public TableDataInfo list(NCustomer nCustomer)
     {
         startPage();
-        List<NCustomer> list = nCustomerService.selectNCustomerList(nCustomer);
+        List<GetCustomerListDTO> list = nCustomerService.selectNCustomerList(nCustomer);
         return getDataTable(list);
     }
 
     /**
      * 导出【请填写功能名称】列表
      */
-    @PreAuthorize("@ss.hasPermi('customer:export')")
-    @Log(title = "【客户管理导出】", businessType = BusinessType.EXPORT)
-    @PostMapping("/export")
-    public void export(HttpServletResponse response, NCustomer nCustomer)
-    {
-        List<NCustomer> list = nCustomerService.selectNCustomerList(nCustomer);
-        ExcelUtil<NCustomer> util = new ExcelUtil<NCustomer>(NCustomer.class);
-        util.exportExcel(response, list, "【请填写功能名称】数据");
-    }
+//TODO
 
     /**
      * 获取【查询客户byId】详细信息
@@ -107,7 +100,7 @@ public class NCustomerController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('customer:remove')")
     @Log(title = "【客户删除】", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{ids}")
+    @DeleteMapping("/{ids}")
     public AjaxResult remove(@PathVariable Long[] ids)
     {
         return toAjax(nCustomerService.deleteNCustomerByIds(ids));

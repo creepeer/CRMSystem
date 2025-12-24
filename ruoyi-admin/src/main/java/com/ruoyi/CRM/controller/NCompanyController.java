@@ -86,10 +86,23 @@ public class NCompanyController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('company:edit')")
     @Log(title = "企业信息", businessType = BusinessType.UPDATE)
-    @PutMapping
+    @PutMapping("/update")
     public AjaxResult edit(@RequestBody NCompany nCompany)
     {
         return toAjax(nCompanyService.updateNCompany(nCompany));
+    }
+
+    /**
+     * 修改企业状态（启用/停用）
+     */
+    @PreAuthorize("@ss.hasPermi('company:edit')")
+    @PutMapping("/updateState")
+    public AjaxResult changeState(@RequestBody NCompany nCompany) {
+
+        if (nCompany.getId() == null || nCompany.getState() == null) {
+            return AjaxResult.error("ID 和状态不能为空");
+        }
+        return toAjax(nCompanyService.updateCompanyState(nCompany.getId(), nCompany.getState()));
     }
 
     /**

@@ -36,7 +36,7 @@ public class NCompany extends BaseEntity
 
     /** 法人年龄 */
     @Excel(name = "法人年龄")
-    private int leAge;
+    private Integer leAge;
 
     /** 法人邮箱 */
     @Excel(name = "法人邮箱")
@@ -52,7 +52,7 @@ public class NCompany extends BaseEntity
 
     /** 企业状态：1-待审核 2-已通过 3-已拒绝 4-停用 */
     @Excel(name = "企业状态：1-待审核 2-已通过 3-已拒绝 4-停用")
-    private int state;
+    private Integer state;
 
     /** 删除标记：0-正常 1-删除 */
     @Excel(name = "删除标记：0-正常 1-删除")
@@ -104,7 +104,7 @@ public class NCompany extends BaseEntity
         this.leName = leName;
     }
 
-    public int getLeAge() {
+    public Integer getLeAge() {
         return leAge;
     }
 
@@ -141,7 +141,7 @@ public class NCompany extends BaseEntity
         this.state = state;
     }
 
-    public int getState()
+    public Integer getState()
     {
         return state;
     }

@@ -34,7 +34,7 @@ public class ManageDTO {
     @ApiModelProperty(value = "法人身份证",example = "129375")
     private String leCard;
 
-    private int status;
+    private int state;
 
     private String username;
 
