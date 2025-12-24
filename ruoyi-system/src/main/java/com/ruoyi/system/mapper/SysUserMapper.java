@@ -54,6 +54,14 @@ public interface SysUserMapper
     public SysUser selectUserById(Long userId);
 
     /**
+     * 通过用户企业ID查询用户
+     *
+     * @param  tenantId; 用户的企业ID
+     * @return 用户对象信息
+     */
+    public SysUser selectUserByTenantId(Long tenantId);
+
+    /**
      * 新增用户信息
      * 
      * @param user 用户信息
