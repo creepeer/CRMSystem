@@ -76,6 +76,20 @@ public class NCompanyServiceImpl implements INCompanyService
     }
 
     /**
+     * 修改企业状态
+     *
+     * @param id 企业ID
+     * @param state 状态值（0=停用，1=启用）
+     * @return 结果
+     */
+    public int updateCompanyState(Long id, Integer state) {
+        NCompany company = new NCompany();
+        company.setId(id);
+        company.setState(state);
+        return nCompanyMapper.updateNCompany(company);
+    }
+
+    /**
      * 批量删除企业信息
      * 
      * @param ids 需要删除的企业信息主键

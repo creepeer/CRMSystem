@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.system.mapper.NCompanyMapper">
-    
+
     <resultMap type="NCompany" id="NCompanyResult">
         <result property="id"    column="id"    />
         <result property="name"    column="name"    />
@@ -30,20 +30,20 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectNCompanyList" parameterType="NCompany" resultMap="NCompanyResult">
         <include refid="selectNCompanyVo"/>
-        <where>  
+        <where>
             <if test="name != null  and name != ''"> and name like concat('%', #{name}, '%')</if>
             <if test="address != null  and address != ''"> and address = #{address}</if>
-            <if test="cplicense != null  and cplicense != ''"> and cplicense = #{cplicense}</if>
-            <if test="lename != null  and lename != ''"> and lename like concat('%', #{lename}, '%')</if>
-            <if test="leage != null "> and leage = #{leage}</if>
-            <if test="leemail != null  and leemail != ''"> and leemail = #{leemail}</if>
-            <if test="lephone != null  and lephone != ''"> and lephone = #{lephone}</if>
-            <if test="lecard != null  and lecard != ''"> and lecard = #{lecard}</if>
+            <if test="license != null  and license != ''"> and cplicense = #{license}</if>
+            <if test="leName != null  and leName != ''"> and lename like concat('%', #{leName}, '%')</if>
+            <if test="leAge != null "> and leage = #{leAge}</if>
+            <if test="leEmail != null  and leEmail != ''"> and leemail = #{leEmail}</if>
+            <if test="lePhone != null  and lePhone != ''"> and lephone = #{lePhone}</if>
+            <if test="leCard != null  and leCard != ''"> and lecard = #{leCard}</if>
             <if test="state != null "> and state = #{state}</if>
             <if test="isDeleted != null "> and is_deleted = #{isDeleted}</if>
         </where>
     </select>
-    
+
     <select id="selectNCompanyById" parameterType="Long" resultMap="NCompanyResult">
         <include refid="selectNCompanyVo"/>
         where id = #{id}
@@ -55,11 +55,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="name != null">name,</if>
             <if test="address != null">address,</if>
             <if test="license != null">cplicense,</if>
-            <if test="leName != null">leName,</if>
-            <if test="leAge != null">leAge,</if>
-            <if test="leEmail != null">leEmail,</if>
-            <if test="lePhone != null">lePhone,</if>
-            <if test="leCard != null">leCard,</if>
+            <if test="leName != null">lename,</if>
+            <if test="leAge != null">leage,</if>
+            <if test="leEmail != null">leemail,</if>
+            <if test="lePhone != null">lephone,</if>
+            <if test="leCard != null">lecard,</if>
             <if test="state != null">state,</if>
             <if test="remark != null">remark,</if>
             <if test="createBy != null">create_by,</if>
@@ -68,7 +68,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateTime != null">update_time,</if>
             <if test="isDeleted != null">is_deleted,</if>
             <if test="tenantId != null">tenant_id,</if>
-         </trim>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="name != null">#{name},</if>
             <if test="address != null">#{address},</if>
@@ -86,7 +86,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateTime != null">#{updateTime},</if>
             <if test="isDeleted != null">#{isDeleted},</if>
             <if test="tenantId != null">#{tenantId}</if>
-         </trim>
+        </trim>
     </insert>
 
     <update id="updateNCompany" parameterType="NCompany">
@@ -94,12 +94,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <trim prefix="SET" suffixOverrides=",">
             <if test="name != null">name = #{name},</if>
             <if test="address != null">address = #{address},</if>
-            <if test="cplicense != null">cplicense = #{cplicense},</if>
-            <if test="lename != null">lename = #{lename},</if>
-            <if test="leage != null">leage = #{leage},</if>
-            <if test="leemail != null">leemail = #{leemail},</if>
-            <if test="lephone != null">lephone = #{lephone},</if>
-            <if test="lecard != null">lecard = #{lecard},</if>
+            <if test="license != null">cplicense = #{license},</if>               <!-- 修正 -->
+            <if test="leName != null">lename = #{leName},</if>                  <!-- 修正 -->
+            <if test="leAge != null">leage = #{leAge},</if>                     <!-- 修正 -->
+            <if test="leEmail != null">leemail = #{leEmail},</if>               <!-- 修正 -->
+            <if test="lePhone != null">lephone = #{lePhone},</if>               <!-- 修正 -->
+            <if test="leCard != null">lecard = #{leCard},</if>                  <!-- 修正 -->
             <if test="state != null">state = #{state},</if>
             <if test="remark != null">remark = #{remark},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
@@ -116,7 +116,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </delete>
 
     <delete id="deleteNCompanyByIds" parameterType="String">
-        delete from n_company where id in 
+        delete from n_company where id in
         <foreach item="id" collection="array" open="(" separator="," close=")">
             #{id}
         </foreach>

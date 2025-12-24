@@ -44,6 +44,16 @@ public interface INCompanyService
      */
     public int updateNCompany(NCompany nCompany);
 
+
+    /**
+     * 修改企业状态
+     *
+     * @param id 企业ID
+     * @param state 状态值（0=停用，1=启用）
+     * @return 影响行数
+     */
+    int updateCompanyState(Long id, Integer state);
+
     /**
      * 批量删除企业信息
      * 

@@ -16,12 +16,12 @@ import com.ruoyi.CRM.service.INCustomerService;
 
 /**
  * 【请填写功能名称】Service业务层处理
- * 
+ *
  * @author ruoyi
  * @date 2025-12-22
  */
 @Service
-public class NCustomerServiceImpl implements INCustomerService 
+public class NCustomerServiceImpl implements INCustomerService
 {
     @Autowired
     private NCustomerMapper nCustomerMapper;
@@ -30,7 +30,7 @@ public class NCustomerServiceImpl implements INCustomerService
 
     /**
      * 查询【请填写功能名称】
-     * 
+     *
      * @param id 【请填写功能名称】主键
      * @return 【请填写功能名称】
      */
@@ -42,7 +42,7 @@ public class NCustomerServiceImpl implements INCustomerService
 
     /**
      * 查询【请填写功能名称】列表
-     * 
+     *
      * @param nCustomer 【请填写功能名称】
      * @return 【请填写功能名称】
      */
@@ -83,7 +83,7 @@ public class NCustomerServiceImpl implements INCustomerService
 
     /**
      * 修改【请填写功能名称】
-     * 
+     *
      * @param nCustomer 【请填写功能名称】
      * @return 结果
      */
@@ -94,7 +94,7 @@ public class NCustomerServiceImpl implements INCustomerService
     }
     /**
      * 批量删除【请填写功能名称】
-     * 
+     *
      * @param ids 需要删除的【请填写功能名称】主键
      * @return 结果
      */
@@ -106,7 +106,7 @@ public class NCustomerServiceImpl implements INCustomerService
 
     /**
      * 删除【请填写功能名称】信息
-     * 
+     *
      * @param id 【请填写功能名称】主键
      * @return 结果
      */

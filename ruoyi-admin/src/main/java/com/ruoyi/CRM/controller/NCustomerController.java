@@ -30,7 +30,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 
 /**
  * 【请填写功能名称】Controller
- * 
+ *
  * @author ruoyi
  * @date 2025-12-22
  */
@@ -107,7 +107,7 @@ public class NCustomerController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('customer:remove')")
     @Log(title = "【客户删除】", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{ids}")
+    @DeleteMapping("/{ids}")
     public AjaxResult remove(@PathVariable Long[] ids)
     {
         return toAjax(nCustomerService.deleteNCustomerByIds(ids));
