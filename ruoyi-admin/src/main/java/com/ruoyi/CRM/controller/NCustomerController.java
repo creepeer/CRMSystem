@@ -89,7 +89,6 @@ public class NCustomerController extends BaseController
     @PutMapping("/update")
     public AjaxResult edit(@RequestBody CustomerDTO customerDTO)
     {
-        System.out.println(customerDTO);
         NCustomer customer=new NCustomer();
         BeanUtils.copyProperties(customerDTO,customer);
         Long userId=customerDTO.getUserId();

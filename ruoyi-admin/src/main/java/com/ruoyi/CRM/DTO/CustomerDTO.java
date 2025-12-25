@@ -20,7 +20,6 @@ public class CustomerDTO {
     @Min(value = 0, message = "年龄不能小于0")
     private Long age;
 
-    @ApiModelProperty(value = "客户电话", example = "13800138000", required = true)
     @NotBlank(message = "客户电话不能为空")
     @Pattern(regexp = "^1[3-9]\\d{9}$", message = "手机号格式不正确")
     private String phone;

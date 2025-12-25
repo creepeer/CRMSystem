@@ -94,7 +94,7 @@ public class SysRegisterService
             sysUser.setNickName(registerBody.getLeName());
             sysUser.setPwdUpdateDate(DateUtils.getNowDate());
             sysUser.setPassword(SecurityUtils.encryptPassword(password));
-            sysUser.setRoleIds(new Long[]{103L});
+            sysUser.setRoleIds(new Long[]{2L});
             sysUser.setStatus("1");
             sysUser.setEmail(registerBody.getLeEmail());
 

@@ -151,7 +151,10 @@ public class UserController extends BaseController
         }
         user.setCreateBy(getUsername());
         user.setPassword(SecurityUtils.encryptPassword(user.getPassword()));
-        return toAjax(userService.insertUser(user));
+        userService.insertUser(user);
+        Long[] roleIds = {103L};
+        userService.insertUserAuth(user.getUserId(),roleIds);
+        return toAjax(1);
     }
 
     /**
